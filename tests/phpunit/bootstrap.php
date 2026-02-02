@@ -1,153 +1,131 @@
 <?php
+/**
+ * Bootstrap pour les tests PHPUnit du plugin Payline
+ *
+ * ARCHITECTURE MODULAIRE :
+ * - Constantes WordPress + Autoload Composer
+ * - Chargement des classes Mock (mocks/classes/)
+ * - Chargement des fonctions WordPress (mocks/wordpress/)
+ * - Chargement des classes et fonctions WooCommerce (mocks/woocommerce/)
+ * - Constantes plugin + Classes à tester
+ *
+ * MOCKS DISPONIBLES :
+ *
+ * Classes Mock :
+ *   - MockOptions : Gestion des options WordPress
+ *   - MockPlugins : Métadonnées des plugins
+ *   - MockWordPress : Contexte et enqueues
+ *   - MockGatewayPayline : Gateway Payline pour tests wallet
+ *   - MockWpQuery : Variable globale $wp
+ *
+ * Classes WordPress/WooCommerce :
+ *   - WC_Order : Commande WooCommerce complète (50+ méthodes)
+ *   - WC_Payment_Gateway : Classe parent des gateways
+ *   - WC_Gateway_Payline : Gateway Payline simple
+ *   - WP_Error : Gestion d'erreurs WordPress
+ *   - WC_Log_Handler_File : Logger WooCommerce
+ *   - MockOrderInternalStatus : Enum statuts de commande
+ *   - MockDraftOrders : Constantes commandes brouillon
+ *   - MockWcCart : Panier WooCommerce
+ *
+ * Fonctions WordPress : (45+ fonctions)
+ *   Contexte : is_admin(), is_page(), in_the_loop() [5]
+ *   Enqueue : wp_enqueue_style(), wp_enqueue_script(), load_template() [3]
+ *   URL : home_url(), admin_url(), plugin_dir_url(), add_query_arg() [6]
+ *   Sécurité : wp_create_nonce(), wp_nonce_url(), esc_attr() [4]
+ *   Hooks : add_action(), do_action(), add_filter(), apply_filters() [4]
+ *   Core : get_option(), update_option(), get_bloginfo(), __() [6]
+ *   Utilitaires : wp_parse_args(), get_plugins(), get_plugin_data() [5]
+ *
+ * Fonctions WooCommerce : (7+ fonctions)
+ *   - wc_add_notice(), wc_get_cart_url(), wc_get_checkout_url()
+ *   - wc_get_order_statuses(), wc_get_order()
+ *   - WC() : Objet global WooCommerce
+ */
+
+// ========================================================================
+// SECTION 1 : CONSTANTES WORDPRESS & AUTOLOAD
+// ========================================================================
 
 if (!defined('ABSPATH')) {
     define('ABSPATH', __DIR__ . '/../');
 }
 
+if (!defined('WP_PLUGIN_DIR')) {
+    define('WP_PLUGIN_DIR', dirname(__DIR__, 2));
+}
+
 require __DIR__ . '/../../vendor/autoload.php';
 
-require_once __DIR__ . '/../../includes/class-wc-payline-payment-gateway.php';
-require_once __DIR__ . '/../../includes/front/payline-wallet.php';
+// ========================================================================
+// SECTION 2 : CHARGEMENT DES CLASSES MOCK
+// ========================================================================
 
+require_once __DIR__ . '/mocks/classes/MockOptions.php';
+require_once __DIR__ . '/mocks/classes/MockPlugins.php';
+require_once __DIR__ . '/mocks/classes/MockWordPress.php';
+require_once __DIR__ . '/mocks/classes/MockGatewayPayline.php';
 
-//////////////////
-///....MOCK....///
-//////////////////
-if (!function_exists('get_option')) {
-    function get_option($key) {
-        $defaults = [
-            'woocommerce_payline_settings' => [
-                'merchant_id' => 'MERCH',
-                'access_key' => 'KEY',
-                'environment' => 'HOMO'
-            ],
-            'woocommerce_payline_nx_settings' => [
-                'merchant_id' => 'NX_MERCH',
-                'access_key' => 'NX_KEY',
-                'environment' => 'HOMO',
-                'widget_integration' => 'redirection'
-            ],
-            'woocommerce_payline_cpt_settings' => [
-                'merchant_id' => 'NX_MERCH',
-                'access_key' => 'NX_KEY',
-                'environment' => 'HOMO',
-                'widget_integration' => 'redirection',
-                'wallet' => 'yes'
-            ],
-            'woocommerce_wrong_sdk_call_settings' => [
-                'environment' => 'HOMO',
-                'widget_integration' => 'redirection'
-            ]
-        ];
-        return $defaults[$key] ?? [];
-    }
+// Initialiser les fixtures par défaut
+MockOptions::reset();
+MockPlugins::reset();
+MockWordPress::reset();
+MockGatewayPayline::reset();
+
+// ========================================================================
+// SECTION 3 : CHARGEMENT DES FONCTIONS WORDPRESS
+// ========================================================================
+
+require_once __DIR__ . '/mocks/wordpress/core-functions.php';
+require_once __DIR__ . '/mocks/wordpress/context-functions.php';
+require_once __DIR__ . '/mocks/wordpress/enqueue-functions.php';
+require_once __DIR__ . '/mocks/wordpress/url-functions.php';
+require_once __DIR__ . '/mocks/wordpress/security-functions.php';
+require_once __DIR__ . '/mocks/wordpress/hook-functions.php';
+require_once __DIR__ . '/mocks/wordpress/utility-functions.php';
+
+// ========================================================================
+// SECTION 4 : CHARGEMENT DES CLASSES ET FONCTIONS WOOCOMMERCE
+// ========================================================================
+
+require_once __DIR__ . '/mocks/woocommerce/WC_Enums.php';
+require_once __DIR__ . '/mocks/woocommerce/WP_Error.php';
+require_once __DIR__ . '/mocks/woocommerce/WC_Payment_Gateway.php';
+require_once __DIR__ . '/mocks/woocommerce/WC_Order.php';
+require_once __DIR__ . '/mocks/woocommerce/wc-functions.php';
+
+// ========================================================================
+// SECTION 5 : CONSTANTES PLUGIN & ENVIRONNEMENT
+// ========================================================================
+
+if (!defined('WCPAYLINE_PLUGIN_VERSION')) {
+    define('WCPAYLINE_PLUGIN_VERSION', '1.0.0-test');
 }
 
-if (!function_exists('get_plugins')) {
-    function get_plugins($path = '') {
-        $plugins = array (
-            'payline/woocommerce-payline.php' =>
-                array (
-                    'WC requires at least' => '',
-                    'WC tested up to' => '4.9.2',
-                    'Woo' => '',
-                    'Name' => 'Payline',
-                    'PluginURI' => 'https://docs.payline.com/display/DT/Plugin+WooCommerce',
-                    'Version' => '1.5.9',
-                    'Description' => 'integrations of Payline payment solution in your WooCommerce store',
-                    'Author' => 'Monext',
-                    'AuthorURI' => 'http://www.monext.fr',
-                    'TextDomain' => 'monext-online-woocommerce',
-                    'DomainPath' => '',
-                    'Network' => false,
-                    'RequiresWP' => '',
-                    'RequiresPHP' => '',
-                    'UpdateURI' => '',
-                    'RequiresPlugins' => 'woocommerce',
-                    'Title' => 'Payline',
-                    'AuthorName' => 'Monext',
-                ),
-            'woocommerce/woocommerce.php' =>
-                array (
-                    'WC requires at least' => '',
-                    'WC tested up to' => '',
-                    'Woo' => '',
-                    'Name' => 'WooCommerce',
-                    'PluginURI' => 'https://woocommerce.com/',
-                    'Version' => '10.3.5',
-                    'Description' => 'An ecommerce toolkit that helps you sell anything. Beautifully.',
-                    'Author' => 'Automattic',
-                    'AuthorURI' => 'https://woocommerce.com',
-                    'TextDomain' => 'woocommerce',
-                    'DomainPath' => '/i18n/languages/',
-                    'Network' => false,
-                    'RequiresWP' => '6.7',
-                    'RequiresPHP' => '7.4',
-                    'UpdateURI' => '',
-                    'RequiresPlugins' => '',
-                    'Title' => 'WooCommerce',
-                    'AuthorName' => 'Automattic',
-                ),
-        );
-
-        return $plugins[$path] ?? [];
-    }
-}
-
-if (!function_exists('get_plugin_data')) {
-    function get_plugin_data($path) {
-        return [
-            'Name' => 'Payline',
-            'PluginURI' => 'https://docs.payline.com/display/DT/Plugin+WooCommerce',
-            'Version' => '1.5.9',
-            'Description' => 'integrations of Payline payment solution in your WooCommerce store',
-            'Author' => 'Monext',
-            'AuthorURI' => 'http://www.monext.fr',
-            'TextDomain' => 'monext-online-woocommerce',
-            'DomainPath' => '',
-            'Network' => false,
-            'RequiresWP' => '',
-            'RequiresPHP' => '',
-            'UpdateURI' => '',
-            'RequiresPlugins' => 'woocommerce',
-            'Title' => 'Payline',
-            'AuthorName' => 'Monext',
-        ];
-    }
-}
-
-if (!function_exists('trailingslashit')) {
-    function trailingslashit($string) {
-        return rtrim($string, '/') . '/';
-    }
-}
-
-if (!function_exists('plugin_dir_path')) {
-    function plugin_dir_path( $file ) {
-        return trailingslashit( dirname( $file ) );
-    }
-}
-
-if (!function_exists('get_bloginfo')) {
-    function get_bloginfo($show) {
-        return '6.8.3';
-    }
-}
-
-if (!class_exists('WC_Log_Handler_File')) {
-    class WC_Log_Handler_File {
-        public static function get_log_file_path($name) {
-            return sys_get_temp_dir() . '/payline.log';
-        }
-    }
-}
-
-if (!class_exists('__')) {
-    function __( $text, $domain = 'default' ) {
-        return $text;
-    }
+if (!defined('WCPAYLINE_PLUGIN_URL')) {
+    define('WCPAYLINE_PLUGIN_URL', 'https://example.com/wp-content/plugins/payline/');
 }
 
 if (!defined('WCPAYLINE_PLUGIN_PATH')) {
     define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
 }
+
+// Mock $_SERVER pour les tests
+if (!isset($_SERVER['REMOTE_ADDR'])) {
+    $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+}
+
+// ========================================================================
+// SECTION 6 : CHARGEMENT DES CLASSES À TESTER
+// ========================================================================
+
+// Charge la classe de base pour les tests
+require_once __DIR__ . '/PaylineTestCase.php';
+
+// Charge les classes à tester (APRÈS les mocks pour éviter les erreurs)
+require_once __DIR__ . '/../../includes/class-wc-payline-payment-gateway.php';
+require_once __DIR__ . '/../../includes/front/payline-wallet.php';
+
+// Charge les classes gateway (APRÈS WC_Payment_Gateway mock)
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-abstract-payline.php';
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-payline-cpt.php';

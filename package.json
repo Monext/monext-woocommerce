@@ -12,7 +12,7 @@
   "devDependencies": {
     "@woocommerce/dependency-extraction-webpack-plugin": "^3.0.0",
     "@woocommerce/eslint-plugin": "^2.2.0",
-    "@wordpress/scripts": "^27.7.0",
+    "@wordpress/scripts": "^31.2.0",
     "archiver": "^7.0.1",
     "colors": "^1.4.0",
     "shelljs": "^0.8.5"

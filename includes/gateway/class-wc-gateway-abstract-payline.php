@@ -37,7 +37,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
     protected $callGetMerchantSettings = true;
 
-    protected $posData;
+    public $order_button_text;
     protected $disp_errors = "";
     protected $admin_link = "";
 

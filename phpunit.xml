@@ -1,18 +1,38 @@
 <?xml version="1.0"?>
+<!--
+Configuration PHPUnit pour le plugin Payline
+
+Flags de qualité activés :
+- beStrictAboutOutputDuringTests : Détecte outputs non voulus
+- beStrictAboutChangesToGlobalState : Détecte modifications état global
+- executionOrder=random : Tests dans ordre aléatoire (détecte dépendances)
+- failOnRisky : Échoue si tests risqués
+- failOnWarning : Échoue si warnings
+-->
 <phpunit
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/8.5/phpunit.xsd"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.6/phpunit.xsd"
         bootstrap="tests/phpunit/bootstrap.php"
-        backupGlobals="false"
         colors="true"
-        convertErrorsToExceptions="true"
-        convertNoticesToExceptions="true"
-        convertWarningsToExceptions="true"
-        convertDeprecationsToExceptions="false"
+        backupGlobals="false"
+        beStrictAboutOutputDuringTests="true"
+        beStrictAboutChangesToGlobalState="true"
+        executionOrder="random"
+        failOnRisky="true"
+        failOnWarning="true"
 >
     <testsuites>
         <testsuite name="WCMonext">
             <directory suffix="_Test.php">./tests/phpunit</directory>
         </testsuite>
     </testsuites>
+
+    <coverage>
+        <include>
+            <directory suffix=".php">./includes</directory>
+        </include>
+        <exclude>
+            <directory>./includes/gateway/views</directory>
+        </exclude>
+    </coverage>
 </phpunit>

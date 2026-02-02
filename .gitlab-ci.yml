@@ -85,7 +85,6 @@ phpunit:
   # run the job in parallel for each PHP version
   parallel:
     matrix:
-#      - PHP_VERSION: "7.2" #no fonctionnel pour l'instant
       - PHP_VERSION: "7.4"
       - PHP_VERSION: "8.0"
       - PHP_VERSION: "8.1"
