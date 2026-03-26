@@ -18,11 +18,11 @@
     "shelljs": "^0.8.5"
   },
   "scripts": {
-    "build": "npm run build:webpack",
+    "build": "composer install --no-dev && npm run build:webpack && npm run archive",
     "start:webpack": "wp-scripts start",
     "build:webpack": "wp-scripts build",
-    "postbuild": "npm run -s && npm run archive",
     "archive": "composer archive --file=$npm_package_name --format=zip",
+    "postarchive": "rm -rf payline && unzip $npm_package_name.zip -d payline && rm $npm_package_name.zip && zip -r $npm_package_name.zip payline && rm -rf payline",
     "release:gitlab": "node tasks/release.js && mv release/*.zip ."
   }
 }

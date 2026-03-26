@@ -1,7 +1,0 @@
-.DS_Store
-vendor
-composer.phar
-.buildpath
-.settings
-.project
-bin

@@ -1,0 +1,40 @@
+name: 'Setup PHP and Node Environment'
+description: 'Setup PHP, Composer, Node and install dependencies'
+
+inputs:
+  php-version:
+    description: 'PHP version to setup'
+    required: false
+    default: '7.4'
+  install-composer-deps:
+    description: 'Install composer dependencies (none, prod, dev)'
+    required: false
+    default: 'none'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        tools: composer
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+
+    - name: Install Composer dependencies (prod)
+      if: inputs.install-composer-deps == 'prod'
+      shell: bash
+      run: composer install --no-dev
+
+    - name: Install Composer dependencies (dev)
+      if: inputs.install-composer-deps == 'dev'
+      shell: bash
+      run: composer install
+
+    - name: Install npm dependencies
+      shell: bash
+      run: npm install

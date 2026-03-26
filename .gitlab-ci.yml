@@ -23,12 +23,23 @@ cache:
 #######
 build_job:
   stage: build
-  image: node:20-buster
+  image: composer:2.6
+  before_script:
+    # Install Node and NPM (plus simple que d'installer PHP+Composer+extensions)
+    - apk add --no-cache nodejs npm
+    - node --version
+    - npm --version
+    - composer --version
+    # Install SOAP extension required by monext/monext-php
+    - apk add --no-cache libxml2-dev
+    - docker-php-ext-install soap
   script:
-    - npm install
-    - npm run build:webpack
-    - npm run release:gitlab
-    - mv payline.zip $PAYLINE_ZIP_PACKAGE
+    # Install npm dependencies
+    - npm ci
+    # Build the plugin (runs: composer install --no-dev, webpack build, and archive)
+    - npm run build
+    # Rename the final archive to include version
+    - mv woocommerce-gateway-payline.zip $PAYLINE_ZIP_PACKAGE
   artifacts:
     paths:
       - $PAYLINE_ZIP_PACKAGE
