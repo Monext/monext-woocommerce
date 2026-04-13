@@ -767,7 +767,12 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         $doWebPaymentRequest['payment']['currency'] = $this->_currencies[$order->get_currency()];
         $doWebPaymentRequest['payment']['action'] = (isset($this->settings['payment_action']))? $this->settings['payment_action'] : '101';
         $doWebPaymentRequest['payment']['mode'] = $this->paymentMode;
-        $mainContract = reset($this->settings['primary_contracts']);
+
+        if (empty($this->settings['primary_contracts'])) {
+            return [];
+        } else {
+            $mainContract = reset($this->settings['primary_contracts']);
+        }
         $doWebPaymentRequest['payment']['contractNumber'] = $mainContract;
 
         // ORDER
