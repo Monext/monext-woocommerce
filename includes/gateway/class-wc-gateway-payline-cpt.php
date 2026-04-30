@@ -19,6 +19,8 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
 
     protected $defaultName = 'Monext CPT';
 
+    public $method_title = 'Monext CPT';
+
     /**
      * @param WC_Refund|bool|WC_Order $order
      * @return mixed|void

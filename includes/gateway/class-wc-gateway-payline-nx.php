@@ -20,6 +20,7 @@ class WC_Gateway_Payline_NX extends WC_Abstract_Recurring_Payline_NX {
 
     public $id = 'payline_nx';
 
+    public $method_title = 'Monext NX';
 
     function init_form_fields()
     {
