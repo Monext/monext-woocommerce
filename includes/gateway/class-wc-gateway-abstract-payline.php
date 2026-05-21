@@ -249,6 +249,10 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         // Load the settings.
         $this->init_settings();
 
+        $this->icon = apply_filters('woocommerce_payline_icon',
+            !empty($this->settings['custom_icon']) ? $this->settings['custom_icon'] : WCPAYLINE_PLUGIN_URL . 'assets/images/icone-monext.svg'
+        );
+
         // Define user set variables
         $this->title = (!empty($this->settings['title']))? $this->settings['title'] :'Payline'.$this->paymentMode;
         $this->description = (isset($this->settings['description']))? $this->settings['description']:'';

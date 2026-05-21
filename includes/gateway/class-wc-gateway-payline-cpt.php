@@ -156,6 +156,13 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
             'description' => __('In redirection mode, fill the code of payment page customization created in Monext Administration Center', 'payline')
         );
 
+        $this->form_fields['custom_icon'] = array(
+            'title' => __( 'Custom icon', 'payline' ),
+            'type' => 'url',
+            'description' => __('Collez le lien direct de votre image hébergée dans la bibliothèque des médias WordPress. Laissez ce champ vide pour utiliser l\'icône par défaut.', 'payline'),
+            'default' => ''
+        );
+
         /**
          * Contracts settings
          */
