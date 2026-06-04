@@ -1,0 +1,1130 @@
+<?php
+/**
+ * Bootstrap pour les tests PHPUnit du plugin Payline
+ *
+ * STRUCTURE DU FICHIER :
+ *   1. Constantes WordPress de base + autoload Composer
+ *   2. Classes Mock (MockOptions, MockPlugins, MockWordPress, MockGatewayPayline)
+ *   3. Fonctions WordPress/WooCommerce mockées (get_option, is_admin, wp_enqueue_*, etc.)
+ *   4. Constantes plugin + Chargement des classes à tester
+ */
+
+// ========================================================================
+// SECTION 1 : CONSTANTES WORDPRESS & AUTOLOAD
+// ========================================================================
+
+if (!defined('ABSPATH')) {
+    define('ABSPATH', __DIR__ . '/../');
+}
+
+if (!defined('WP_PLUGIN_DIR')) {
+    define('WP_PLUGIN_DIR', dirname(__DIR__, 2));
+}
+
+require __DIR__ . '/../../vendor/autoload.php';
+
+// ========================================================================
+// SECTION 2 : CLASSES MOCK
+// ========================================================================
+
+/**
+ * Mock dynamique pour les options WordPress
+ *
+ * Simule get_option() avec des fixtures par défaut pour éviter
+ * les appels DB pendant les tests.
+ *
+ * Usage :
+ *   MockOptions::reset();                     // Reset aux valeurs initiales
+ *   MockOptions::$data['key']['field'] = 'X'; // Modifier pour un test
+ *
+ * Fixtures :
+ *   - woocommerce_payline_settings : Configuration globale
+ *     - merchant_id : 'MERCH' (mock, invalide pour API réelle)
+ *     - access_key : 'KEY' (mock, invalide pour API réelle)
+ *     - environment : 'HOMO' (Homologation/test Monext)
+ *
+ *   - woocommerce_payline_nx_settings : Configuration NX (3x/4x)
+ *     - merchant_id : 'NX_MERCH'
+ *     - access_key : 'NX_KEY'
+ *     - widget_integration : 'redirection'
+ *
+ *   - woocommerce_payline_cpt_settings : Configuration CPT (comptant)
+ *     - wallet : 'yes' (portefeuille activé)
+ *
+ *   - woocommerce_wrong_sdk_call_settings : Cas de test pour credentials manquants
+ *     (utilisé pour tester que getSDK() retourne null si credentials absents)
+ */
+class MockOptions {
+    private static $fixtures = [
+        'woocommerce_payline_settings' => [
+            'merchant_id' => 'MERCH',
+            'access_key' => 'KEY',
+            'environment' => 'HOMO'
+        ],
+        'woocommerce_payline_nx_settings' => [
+            'merchant_id' => 'NX_MERCH',
+            'access_key' => 'NX_KEY',
+            'environment' => 'HOMO',
+            'widget_integration' => 'redirection'
+        ],
+        'woocommerce_payline_cpt_settings' => [
+            'merchant_id' => 'NX_MERCH',
+            'access_key' => 'NX_KEY',
+            'environment' => 'HOMO',
+            'widget_integration' => 'redirection',
+            'wallet' => 'yes'
+        ],
+        'woocommerce_wrong_sdk_call_settings' => [
+            'environment' => 'HOMO',
+            'widget_integration' => 'redirection'
+        ]
+    ];
+
+    public static $data = [];
+
+    public static function reset(): void
+    {
+        self::$data = self::$fixtures;
+    }
+
+    public static function getFixtures(): array
+    {
+        return self::$fixtures;
+    }
+}
+
+MockOptions::reset();
+
+if (!function_exists('get_option')) {
+    function get_option($key, $default = []) {
+        return MockOptions::$data[$key] ?? $default;
+    }
+}
+
+/**
+ * Mock dynamique pour les données des plugins
+ *
+ * Simule get_plugin_data() et get_plugins() pour éviter
+ * les appels filesystem pendant les tests.
+ *
+ * Usage :
+ *   MockPlugins::reset();                              // Reset aux valeurs initiales
+ *   MockPlugins::$data['payline']['Version'] = '2.0'; // Modifier pour un test
+ *
+ * Fixtures :
+ *   - payline : Métadonnées du plugin Payline
+ *     - Version : '1.5.8' (utilisé par getExtensionVersion())
+ *
+ *   - woocommerce : Métadonnées du plugin WooCommerce
+ *     - Version : '10.3.5'
+ */
+class MockPlugins {
+    private static $fixtures = [
+        'payline' => [
+            'Name' => 'Payline',
+            'PluginURI' => 'https://docs.payline.com/display/DT/Plugin+WooCommerce',
+            'Version' => '1.5.8',
+            'Description' => 'integrations of Payline payment solution in your WooCommerce store',
+            'Author' => 'Monext',
+            'AuthorURI' => 'http://www.monext.fr',
+            'TextDomain' => 'monext-online-woocommerce',
+            'DomainPath' => '',
+            'Network' => false,
+            'RequiresWP' => '',
+            'RequiresPHP' => '',
+            'UpdateURI' => '',
+            'RequiresPlugins' => 'woocommerce',
+            'Title' => 'Payline',
+            'AuthorName' => 'Monext',
+            'WC requires at least' => '',
+            'WC tested up to' => '4.9.2',
+            'Woo' => '',
+        ],
+        'woocommerce' => [
+            'WC requires at least' => '',
+            'WC tested up to' => '',
+            'Woo' => '',
+            'Name' => 'WooCommerce',
+            'PluginURI' => 'https://woocommerce.com/',
+            'Version' => '10.3.5',
+            'Description' => 'An ecommerce toolkit that helps you sell anything. Beautifully.',
+            'Author' => 'Automattic',
+            'AuthorURI' => 'https://woocommerce.com',
+            'TextDomain' => 'woocommerce',
+            'DomainPath' => '/i18n/languages/',
+            'Network' => false,
+            'RequiresWP' => '6.7',
+            'RequiresPHP' => '7.4',
+            'UpdateURI' => '',
+            'RequiresPlugins' => '',
+            'Title' => 'WooCommerce',
+            'AuthorName' => 'Automattic',
+        ]
+    ];
+
+    public static $data = [];
+
+    public static function reset(): void
+    {
+        self::$data = self::$fixtures;
+    }
+
+    public static function getFixtures(): array
+    {
+        return self::$fixtures;
+    }
+}
+
+MockPlugins::reset();
+
+if (!function_exists('get_plugins')) {
+    function get_plugins($path = '') {
+        $plugins = [
+            'payline/woocommerce-payline.php' => MockPlugins::$data['payline'],
+            'woocommerce/woocommerce.php' => MockPlugins::$data['woocommerce'],
+        ];
+
+        if ($path === '') {
+            return $plugins;
+        }
+
+        $pluginName = trim($path, '/');
+        $key = $pluginName . '/' . $pluginName . '.php';
+        if (isset($plugins[$key])) {
+            return [$pluginName . '.php' => $plugins[$key]];
+        }
+        return [];
+    }
+}
+
+if (!function_exists('get_plugin_data')) {
+    function get_plugin_data($path) {
+        return MockPlugins::$data['payline'];
+    }
+}
+
+/**
+ * Mock dynamique pour les fonctions WordPress (contexte page)
+ *
+ * Simule les fonctions WordPress qui dépendent du contexte
+ * (is_admin, is_page, etc.) et les enqueues de scripts/styles.
+ *
+ * Usage :
+ *   MockWordPress::reset();                        // Reset aux valeurs initiales
+ *   MockWordPress::$data['is_admin'] = true;      // Modifier pour un test
+ *   MockWordPress::simulateWalletPage();          // Helper pour page wallet
+ *
+ * Fixtures :
+ *   - is_admin : false (mode frontend par défaut)
+ *   - is_main_query : true
+ *   - is_account_page : true
+ *   - is_page : true
+ *   - in_the_loop : true
+ *   - enqueued_styles : array() (styles enregistrés)
+ *   - enqueued_scripts : array() (scripts enregistrés)
+ *   - loaded_templates : array() (templates chargés)
+ */
+class MockWordPress {
+    private static $fixtures = [
+        'is_admin' => false,
+        'is_main_query' => true,
+        'is_account_page' => true,
+        'is_page' => true,
+        'in_the_loop' => true,
+        'enqueued_styles' => [],
+        'enqueued_scripts' => [],
+        'loaded_templates' => [],
+    ];
+
+    public static $data = [];
+
+    public static function reset(): void
+    {
+        self::$data = self::$fixtures;
+        // Reset aussi la variable globale $wp
+        global $wp;
+        $wp = null;
+    }
+
+    public static function getFixtures(): array
+    {
+        return self::$fixtures;
+    }
+
+    /**
+     * Configure le contexte WordPress pour simuler la page "Mon Wallet"
+     *
+     * Nécessaire pour tester les méthodes qui dépendent du contexte WordPress :
+     * - PaylineWallet::is_wallet_endpoint_url()
+     * - PaylineWallet::getPageTitle()
+     * - PaylineWallet::payline_add_front_styles()
+     *
+     * Configure :
+     * - global $wp avec query_vars['my-payline-wallet']
+     * - is_admin = false
+     * - is_main_query = true
+     * - is_account_page = true
+     * - is_page = true
+     * - in_the_loop = true
+     *
+     * Usage :
+     *   MockWordPress::simulateWalletPage();
+     *   $result = PaylineWallet::getPageContent(); // Simule rendu wallet
+     */
+    public static function simulateWalletPage(): void
+    {
+        global $wp;
+        $wp = new MockWpQuery();
+        $wp->query_vars = ['my-payline-wallet' => 'my-payline-wallet'];
+
+        self::$data['is_admin'] = false;
+        self::$data['is_main_query'] = true;
+        self::$data['is_account_page'] = true;
+        self::$data['is_page'] = true;
+        self::$data['in_the_loop'] = true;
+    }
+}
+
+MockWordPress::reset();
+
+/**
+ * Mock de la variable globale $wp
+ */
+class MockWpQuery {
+    public $query_vars = [];
+}
+
+// ========================================================================
+// SECTION 3 : FONCTIONS WORDPRESS/WOOCOMMERCE MOCKÉES
+// ========================================================================
+
+if (!function_exists('is_admin')) {
+    function is_admin() {
+        return MockWordPress::$data['is_admin'];
+    }
+}
+
+if (!function_exists('is_main_query')) {
+    function is_main_query() {
+        return MockWordPress::$data['is_main_query'];
+    }
+}
+
+if (!function_exists('is_account_page')) {
+    function is_account_page() {
+        return MockWordPress::$data['is_account_page'];
+    }
+}
+
+if (!function_exists('is_page')) {
+    function is_page() {
+        return MockWordPress::$data['is_page'];
+    }
+}
+
+if (!function_exists('in_the_loop')) {
+    function in_the_loop() {
+        return MockWordPress::$data['in_the_loop'];
+    }
+}
+
+// Fonctions WordPress d'enqueue
+if (!function_exists('wp_enqueue_style')) {
+    function wp_enqueue_style($handle, $src = '', $deps = [], $ver = false, $media = 'all') {
+        MockWordPress::$data['enqueued_styles'][$handle] = [
+            'src' => $src,
+            'deps' => $deps,
+            'ver' => $ver,
+            'media' => $media
+        ];
+    }
+}
+
+if (!function_exists('wp_enqueue_script')) {
+    function wp_enqueue_script($handle, $src = '', $deps = [], $ver = false, $in_footer = false) {
+        MockWordPress::$data['enqueued_scripts'][$handle] = [
+            'src' => $src,
+            'deps' => $deps,
+            'ver' => $ver,
+            'in_footer' => $in_footer
+        ];
+    }
+}
+
+if (!function_exists('load_template')) {
+    function load_template($template_file, $require_once = true, $args = []) {
+        MockWordPress::$data['loaded_templates'][] = [
+            'file' => $template_file,
+            'require_once' => $require_once,
+            'args' => $args
+        ];
+    }
+}
+
+if (!function_exists('plugin_dir_url')) {
+    function plugin_dir_url($file) {
+        return 'https://example.com/wp-content/plugins/payline/';
+    }
+}
+
+// Fonctions WordPress utilitaires
+if (!function_exists('trailingslashit')) {
+    function trailingslashit($string) {
+        return rtrim($string, '/') . '/';
+    }
+}
+
+if (!function_exists('plugin_dir_path')) {
+    function plugin_dir_path($file) {
+        return trailingslashit(dirname($file));
+    }
+}
+
+if (!function_exists('get_bloginfo')) {
+    function get_bloginfo($show) {
+        return '6.8.3';
+    }
+}
+
+if (!function_exists('__')) {
+    function __($text, $domain = 'default') {
+        return $text;
+    }
+}
+
+// Mock WooCommerce
+if (!class_exists('WC_Log_Handler_File')) {
+    class WC_Log_Handler_File {
+        public static function get_log_file_path($name) {
+            return sys_get_temp_dir() . '/payline.log';
+        }
+    }
+}
+
+/**
+ * Mock de WC_Gateway_Payline pour les tests
+ *
+ * Simule la classe WC_Gateway_Payline pour éviter les appels
+ * API réels pendant les tests de PaylineWallet.
+ *
+ * Usage :
+ *   MockGatewayPayline::reset();                                      // Reset
+ *   MockGatewayPayline::$data['createManageWebWallet_result'] = ...; // Modifier
+ *
+ * Fixtures :
+ *   - createManageWebWallet_result : array('token' => 'mock_token_123')
+ *     Simule le token retourné par l'API Monext pour le wallet
+ */
+class MockGatewayPayline {
+    private static $fixtures = [
+        'createManageWebWallet_result' => ['token' => 'mock_token_123']
+    ];
+
+    public static $data = [];
+
+    public static function reset(): void
+    {
+        self::$data = self::$fixtures;
+    }
+
+    public static function getFixtures(): array
+    {
+        return self::$fixtures;
+    }
+}
+
+MockGatewayPayline::reset();
+
+if (!class_exists('WC_Gateway_Payline')) {
+    class WC_Gateway_Payline {
+        public function createManageWebWallet() {
+            return MockGatewayPayline::$data['createManageWebWallet_result'];
+        }
+    }
+}
+
+// ========================================================================
+// SECTION 3.5 : MOCKS WOOCOMMERCE GATEWAY
+// ========================================================================
+// Ces mocks sont nécessaires pour charger les classes gateway (WC_Abstract_Payline)
+
+if (!defined('WCPAYLINE_PLUGIN_VERSION')) {
+    define('WCPAYLINE_PLUGIN_VERSION', '1.0.0-test');
+}
+
+if (!defined('WCPAYLINE_PLUGIN_URL')) {
+    define('WCPAYLINE_PLUGIN_URL', 'https://example.com/wp-content/plugins/payline/');
+}
+
+if (!function_exists('home_url')) {
+    function home_url($path = '') {
+        return 'https://example.com' . $path;
+    }
+}
+
+if (!function_exists('wp_kses_post')) {
+    function wp_kses_post($data) {
+        return $data; // Pas de filtrage en test
+    }
+}
+
+if (!function_exists('wp_parse_args')) {
+    function wp_parse_args($args, $defaults = array()) {
+        if (is_object($args)) {
+            $parsed_args = get_object_vars($args);
+        } elseif (is_array($args)) {
+            $parsed_args = &$args;
+        } else {
+            wp_parse_str($args, $parsed_args);
+        }
+        return array_merge($defaults, $parsed_args);
+    }
+}
+
+if (!function_exists('wp_parse_str')) {
+    function wp_parse_str($input_string, &$result) {
+        parse_str($input_string, $result);
+    }
+}
+
+if (!function_exists('wc_get_order_statuses')) {
+    function wc_get_order_statuses() {
+        return array(
+            'wc-pending' => 'Pending payment',
+            'wc-processing' => 'Processing',
+            'wc-on-hold' => 'On hold',
+            'wc-completed' => 'Completed',
+            'wc-cancelled' => 'Cancelled',
+            'wc-refunded' => 'Refunded',
+            'wc-failed' => 'Failed',
+        );
+    }
+}
+
+if (!function_exists('apply_filters')) {
+    function apply_filters($hook_name, $value, ...$args) {
+        return $value;
+    }
+}
+
+if (!function_exists('do_action')) {
+    function do_action($hook_name, ...$args) {
+        // No-op en test
+    }
+}
+
+if (!function_exists('add_action')) {
+    function add_action($hook_name, $callback, $priority = 10, $accepted_args = 1) {
+        // No-op en test
+    }
+}
+
+if (!function_exists('add_filter')) {
+    function add_filter($hook_name, $callback, $priority = 10, $accepted_args = 1) {
+        // No-op en test
+    }
+}
+
+if (!function_exists('esc_attr')) {
+    function esc_attr($text) {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('update_option')) {
+    function update_option($option, $value, $autoload = null) {
+        MockOptions::$data[$option] = $value;
+        return true;
+    }
+}
+
+if (!function_exists('admin_url')) {
+    function admin_url($path = '', $scheme = 'admin') {
+        return 'https://example.com/wp-admin/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('add_query_arg')) {
+    function add_query_arg(...$args) {
+        if (is_array($args[0])) {
+            // add_query_arg(array('key' => 'value'), $url)
+            $params = $args[0];
+            $url = isset($args[1]) ? $args[1] : '';
+        } else {
+            // add_query_arg('key', 'value', $url)
+            $params = array($args[0] => $args[1]);
+            $url = isset($args[2]) ? $args[2] : '';
+        }
+
+        $parsed = parse_url($url);
+        $query = array();
+
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $query);
+        }
+
+        $query = array_merge($query, $params);
+
+        $base = '';
+        if (isset($parsed['scheme'])) {
+            $base .= $parsed['scheme'] . '://';
+        }
+        if (isset($parsed['host'])) {
+            $base .= $parsed['host'];
+        }
+        if (isset($parsed['path'])) {
+            $base .= $parsed['path'];
+        }
+
+        return $base . '?' . http_build_query($query);
+    }
+}
+
+if (!function_exists('wc_add_notice')) {
+    function wc_add_notice($message, $type = 'success') {
+        // No-op en test
+    }
+}
+
+if (!function_exists('wp_redirect')) {
+    function wp_redirect($location, $status = 302) {
+        // No-op en test (évite les headers already sent)
+        return false;
+    }
+}
+
+if (!function_exists('wp_create_nonce')) {
+    function wp_create_nonce($action = -1) {
+        return 'test_nonce_' . md5($action);
+    }
+}
+
+if (!function_exists('wp_nonce_url')) {
+    function wp_nonce_url($actionurl, $action = -1, $name = '_wpnonce') {
+        $nonce = wp_create_nonce($action);
+        $separator = (strpos($actionurl, '?') !== false) ? '&' : '?';
+        return $actionurl . $separator . $name . '=' . $nonce;
+    }
+}
+
+if (!function_exists('do_action')) {
+    function do_action($hook_name, ...$args) {
+        // No-op en test
+    }
+}
+
+if (!function_exists('wc_get_cart_url')) {
+    function wc_get_cart_url() {
+        return 'https://example.com/cart';
+    }
+}
+
+if (!function_exists('wc_get_checkout_url')) {
+    function wc_get_checkout_url() {
+        return 'https://example.com/checkout';
+    }
+}
+
+if (!function_exists('get_current_user_id')) {
+    function get_current_user_id() {
+        return 1; // Mock user ID
+    }
+}
+
+// Mock WooCommerce OrderInternalStatus (Enum-like class)
+// IMPORTANT : Définir la classe AVANT le class_alias
+if (!class_exists('MockOrderInternalStatus')) {
+    class MockOrderInternalStatus {
+        const CANCELLED = 'wc-cancelled';
+        const REFUNDED = 'wc-refunded';
+        const FAILED = 'wc-failed';
+        const ON_HOLD = 'wc-on-hold';
+        const PENDING = 'wc-pending';
+    }
+}
+
+if (!class_exists('Automattic\WooCommerce\Enums\OrderInternalStatus')) {
+    class_alias('MockOrderInternalStatus', 'Automattic\WooCommerce\Enums\OrderInternalStatus');
+}
+
+// Mock WooCommerce DraftOrders
+// IMPORTANT : Définir la classe AVANT le class_alias
+if (!class_exists('MockDraftOrders')) {
+    class MockDraftOrders {
+        const DB_STATUS = 'wc-checkout-draft';
+    }
+}
+
+if (!class_exists('Automattic\WooCommerce\Blocks\Domain\Services\DraftOrders')) {
+    class_alias('MockDraftOrders', 'Automattic\WooCommerce\Blocks\Domain\Services\DraftOrders');
+}
+
+// Mock WC_Payment_Gateway (classe parent WooCommerce)
+if (!class_exists('WC_Payment_Gateway')) {
+    class WC_Payment_Gateway {
+        public $id = '';
+        public $title = '';
+        public $description = '';
+        public $enabled = 'yes';
+        public $method_title = '';
+        public $method_description = '';
+        public $has_fields = false;
+        public $supports = array('products');
+        public $icon = '';
+        public $form_fields = array();
+        public $settings = array();
+        protected $plugin_id = 'woocommerce_';
+
+        public function __construct() {
+            $this->init_settings();
+        }
+
+        public function init_settings() {
+            // Charge les settings depuis MockOptions
+            $option_key = 'woocommerce_' . $this->id . '_settings';
+            $this->settings = get_option($option_key, array());
+        }
+
+        public function init_form_fields() {
+            $this->form_fields = array();
+        }
+
+        public function get_option($key, $empty_value = null) {
+            if (isset($this->settings[$key])) {
+                return $this->settings[$key];
+            }
+            return $empty_value;
+        }
+
+        public function generate_settings_html($form_fields = array(), $echo = true) {
+            $html = '<table class="form-table">';
+            foreach ($form_fields as $key => $field) {
+                $html .= '<tr><th>' . ($field['title'] ?? $key) . '</th><td></td></tr>';
+            }
+            $html .= '</table>';
+            if ($echo) {
+                echo $html;
+            }
+            return $html;
+        }
+
+        protected function get_field_key($key) {
+            return $this->plugin_id . $this->id . '_' . $key;
+        }
+
+        public function get_tooltip_html($data) {
+            return '';
+        }
+
+        public function validate_multiselect_field($key, $value) {
+            return is_array($value) ? $value : array();
+        }
+
+        public function process_admin_options() {
+            // No-op en test
+        }
+
+        public function is_available() {
+            return $this->enabled === 'yes';
+        }
+    }
+}
+
+// Mock WP_Error pour les tests (classe WordPress standard)
+if (!class_exists('WP_Error')) {
+    class WP_Error {
+        private $errors = array();
+        private $error_data = array();
+
+        public function __construct($code = '', $message = '', $data = '') {
+            if (!empty($code)) {
+                $this->errors[$code][] = $message;
+                if (!empty($data)) {
+                    $this->error_data[$code] = $data;
+                }
+            }
+        }
+
+        public function get_error_code() {
+            $codes = array_keys($this->errors);
+            return empty($codes) ? '' : $codes[0];
+        }
+
+        public function get_error_message($code = '') {
+            if (empty($code)) {
+                $code = $this->get_error_code();
+            }
+            return isset($this->errors[$code][0]) ? $this->errors[$code][0] : '';
+        }
+
+        public function get_error_data($code = '') {
+            if (empty($code)) {
+                $code = $this->get_error_code();
+            }
+            return isset($this->error_data[$code]) ? $this->error_data[$code] : null;
+        }
+
+        public function add($code, $message, $data = '') {
+            $this->errors[$code][] = $message;
+            if (!empty($data)) {
+                $this->error_data[$code] = $data;
+            }
+        }
+    }
+}
+
+// Mock WC_Order pour les tests nécessitant une commande WooCommerce
+// Permet de tester les méthodes qui manipulent des commandes sans charger WooCommerce complet
+if (!class_exists('WC_Order')) {
+    class WC_Order {
+        private $id;
+        private $status = 'pending';
+        private $total = '100.00';
+        private $currency = 'EUR';
+        private $transaction_id = '';
+        private $payment_method = '';
+        private $payment_method_title = '';
+        private $meta_data = array();
+        private $items = array();
+        private $billing = array(
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'email' => 'john.doe@example.com',
+            'phone' => '0123456789',
+            'address_1' => '123 Main St',
+            'address_2' => '',
+            'city' => 'Paris',
+            'postcode' => '75001',
+            'country' => 'FR',
+            'company' => '',
+        );
+        private $shipping = array(
+            'first_name' => 'John',
+            'last_name' => 'Doe',
+            'address_1' => '123 Main St',
+            'address_2' => '',
+            'city' => 'Paris',
+            'postcode' => '75001',
+            'country' => 'FR',
+            'company' => '',
+        );
+        private $user_id = 1;
+        private $order_notes = array();
+
+        public function __construct($order_id = 0) {
+            $this->id = $order_id > 0 ? $order_id : rand(1000, 9999);
+        }
+
+        // ID et basiques
+        public function get_id() {
+            return $this->id;
+        }
+
+        public function get_status() {
+            return $this->status;
+        }
+
+        public function update_status($new_status, $note = '', $manual = false) {
+            $this->status = $new_status;
+            if ($note) {
+                $this->add_order_note($note);
+            }
+            return true;
+        }
+
+        // Montants
+        public function get_total() {
+            return $this->total;
+        }
+
+        public function set_total($amount) {
+            $this->total = $amount;
+        }
+
+        public function get_total_tax() {
+            return '20.00';
+        }
+
+        public function get_cart_tax() {
+            return '15.00';
+        }
+
+        public function get_shipping_total() {
+            return '5.00';
+        }
+
+        public function get_shipping_tax() {
+            return '1.00';
+        }
+
+        public function get_currency() {
+            return $this->currency;
+        }
+
+        public function set_currency($currency) {
+            $this->currency = $currency;
+        }
+
+        // Transaction
+        public function get_transaction_id() {
+            return $this->transaction_id;
+        }
+
+        public function set_transaction_id($transaction_id) {
+            $this->transaction_id = $transaction_id;
+            return true;
+        }
+
+        // Méthode de paiement
+        public function get_payment_method() {
+            return $this->payment_method;
+        }
+
+        public function set_payment_method($payment_method) {
+            $this->payment_method = $payment_method;
+        }
+
+        public function get_payment_method_title() {
+            return $this->payment_method_title;
+        }
+
+        public function set_payment_method_title($title) {
+            $this->payment_method_title = $title;
+        }
+
+        // Métadonnées
+        public function get_meta($key, $single = true, $context = 'view') {
+            return isset($this->meta_data[$key]) ? $this->meta_data[$key] : '';
+        }
+
+        public function update_meta_data($key, $value) {
+            $this->meta_data[$key] = $value;
+        }
+
+        public function add_meta_data($key, $value, $unique = false) {
+            if ($unique && isset($this->meta_data[$key])) {
+                return;
+            }
+            $this->meta_data[$key] = $value;
+        }
+
+        public function delete_meta_data($key) {
+            unset($this->meta_data[$key]);
+        }
+
+        // Adresses
+        public function get_billing_first_name($context = 'view') {
+            return $this->billing['first_name'];
+        }
+
+        public function get_billing_last_name($context = 'view') {
+            return $this->billing['last_name'];
+        }
+
+        public function get_billing_email($context = 'view') {
+            return $this->billing['email'];
+        }
+
+        public function get_billing_phone($context = 'view') {
+            return $this->billing['phone'];
+        }
+
+        public function get_billing_address_1($context = 'view') {
+            return $this->billing['address_1'];
+        }
+
+        public function get_billing_address_2($context = 'view') {
+            return $this->billing['address_2'];
+        }
+
+        public function get_billing_city($context = 'view') {
+            return $this->billing['city'];
+        }
+
+        public function get_billing_postcode($context = 'view') {
+            return $this->billing['postcode'];
+        }
+
+        public function get_billing_country($context = 'view') {
+            return $this->billing['country'];
+        }
+
+        public function get_billing_company($context = 'view') {
+            return $this->billing['company'];
+        }
+
+        public function get_shipping_first_name($context = 'view') {
+            return $this->shipping['first_name'];
+        }
+
+        public function get_shipping_last_name($context = 'view') {
+            return $this->shipping['last_name'];
+        }
+
+        public function get_shipping_address_1($context = 'view') {
+            return $this->shipping['address_1'];
+        }
+
+        public function get_shipping_address_2($context = 'view') {
+            return $this->shipping['address_2'];
+        }
+
+        public function get_shipping_city($context = 'view') {
+            return $this->shipping['city'];
+        }
+
+        public function get_shipping_postcode($context = 'view') {
+            return $this->shipping['postcode'];
+        }
+
+        public function get_shipping_country($context = 'view') {
+            return $this->shipping['country'];
+        }
+
+        public function get_shipping_company($context = 'view') {
+            return $this->shipping['company'];
+        }
+
+        public function get_shipping_phone($context = 'view') {
+            return isset($this->shipping['phone']) ? $this->shipping['phone'] : '';
+        }
+
+        // Articles
+        public function get_items($types = 'line_item') {
+            return $this->items;
+        }
+
+        // User
+        public function get_user_id($context = 'view') {
+            return $this->user_id;
+        }
+
+        // URLs
+        public function get_checkout_order_received_url() {
+            return 'https://example.com/checkout/order-received/' . $this->id;
+        }
+
+        public function get_cancel_order_url($redirect = '') {
+            return 'https://example.com/checkout/order-cancelled/' . $this->id;
+        }
+
+        // Notes
+        public function add_order_note($note, $is_customer_note = 0, $added_by_user = false) {
+            $this->order_notes[] = array(
+                'content' => $note,
+                'customer_note' => $is_customer_note,
+                'added_by' => $added_by_user,
+            );
+        }
+
+        public function get_order_notes() {
+            return $this->order_notes;
+        }
+
+        // Save
+        public function save() {
+            return $this->id;
+        }
+
+        // Setters pour les tests
+        public function set_id($id) {
+            $this->id = $id;
+        }
+
+        public function set_billing($billing) {
+            $this->billing = array_merge($this->billing, $billing);
+        }
+
+        public function set_shipping($shipping) {
+            $this->shipping = array_merge($this->shipping, $shipping);
+        }
+
+        public function set_items($items) {
+            $this->items = $items;
+        }
+
+        public function set_user_id($user_id) {
+            $this->user_id = $user_id;
+        }
+
+        // Compléter le paiement (marquer commande payée + transaction ID)
+        public function payment_complete($transaction_id = '') {
+            if ($transaction_id) {
+                $this->set_transaction_id($transaction_id);
+            }
+            $this->update_status('processing', 'Payment complete');
+            return true;
+        }
+    }
+}
+
+// Fonction globale wc_get_order avec cache pour les tests
+if (!function_exists('wc_get_order')) {
+    function wc_get_order($order_id) {
+        static $order_cache = array();
+
+        if ($order_id instanceof WC_Order) {
+            // Sauvegarder dans le cache
+            $order_cache[$order_id->get_id()] = $order_id;
+            return $order_id;
+        }
+
+        // Retourner du cache si disponible
+        if (isset($order_cache[$order_id])) {
+            return $order_cache[$order_id];
+        }
+
+        // Créer nouveau et mettre en cache
+        $order = new WC_Order($order_id);
+        $order_cache[$order_id] = $order;
+        return $order;
+    }
+}
+
+// Mock $_SERVER pour les tests
+if (!isset($_SERVER['REMOTE_ADDR'])) {
+    $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+}
+
+// Fonction WC() pour WooCommerce global (utilisée par get_error_payment_url)
+if (!function_exists('WC')) {
+    function WC() {
+        static $wc = null;
+        if ($wc === null) {
+            $wc = new stdClass();
+            // Mock cart avec get_cart_hash()
+            $wc->cart = new class {
+                public function get_cart_hash() {
+                    return md5('test_cart_hash');
+                }
+            };
+            $wc->session = new stdClass();
+        }
+        return $wc;
+    }
+}
+
+// Fonction WordPress is_user_logged_in()
+if (!function_exists('is_user_logged_in')) {
+    function is_user_logged_in() {
+        return false;  // Par défaut, utilisateur non connecté dans les tests
+    }
+}
+
+// ========================================================================
+// SECTION 4 : CONSTANTES & CHARGEMENT DES CLASSES
+// ========================================================================
+if (!defined('WCPAYLINE_PLUGIN_PATH')) {
+    define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
+}
+
+// Charge la classe de base pour les tests
+require_once __DIR__ . '/PaylineTestCase.php';
+
+// Charge les classes à tester (APRÈS les mocks pour éviter les erreurs)
+require_once __DIR__ . '/../../includes/class-wc-payline-payment-gateway.php';
+require_once __DIR__ . '/../../includes/front/payline-wallet.php';
+
+// Charge les classes gateway (APRÈS WC_Payment_Gateway mock)
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-abstract-payline.php';
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-payline-cpt.php';

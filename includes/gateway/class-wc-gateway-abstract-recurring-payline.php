@@ -56,6 +56,13 @@ abstract class WC_Abstract_Recurring_Payline_NX extends WC_Abstract_Payline {
             'default' => sprintf(__('You will be redirected on %s secured pages at the end of your order.', 'payline'), 'Payline')
         );
 
+        $this->form_fields['custom_icon'] = array(
+            'title' => __( 'Custom icon', 'payline' ),
+            'type' => 'url',
+            'description' => __('Collez le lien direct de votre image hébergée dans la bibliothèque des médias WordPress. Laissez ce champ vide pour utiliser l\'icône par défaut.', 'payline'),
+            'default' => ''
+        );
+
         $this->form_fields['billing_cycle'] = array(
             'title' => __('Payment frequencies', 'payline'),
             'type' => 'select',

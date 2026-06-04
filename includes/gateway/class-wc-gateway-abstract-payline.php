@@ -37,7 +37,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
     protected $callGetMerchantSettings = true;
 
-    protected $posData;
+    public $order_button_text;
     protected $disp_errors = "";
     protected $admin_link = "";
 
@@ -248,6 +248,10 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
         // Load the settings.
         $this->init_settings();
+
+        $this->icon = apply_filters('woocommerce_payline_icon',
+            !empty($this->settings['custom_icon']) ? $this->settings['custom_icon'] : WCPAYLINE_PLUGIN_URL . 'assets/images/icone-monext.svg'
+        );
 
         // Define user set variables
         $this->title = (!empty($this->settings['title']))? $this->settings['title'] :'Payline'.$this->paymentMode;
@@ -767,7 +771,12 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         $doWebPaymentRequest['payment']['currency'] = $this->_currencies[$order->get_currency()];
         $doWebPaymentRequest['payment']['action'] = (isset($this->settings['payment_action']))? $this->settings['payment_action'] : '101';
         $doWebPaymentRequest['payment']['mode'] = $this->paymentMode;
-        $mainContract = reset($this->settings['primary_contracts']);
+
+        if (empty($this->settings['primary_contracts'])) {
+            return [];
+        } else {
+            $mainContract = reset($this->settings['primary_contracts']);
+        }
         $doWebPaymentRequest['payment']['contractNumber'] = $mainContract;
 
         // ORDER

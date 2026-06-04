@@ -70,6 +70,7 @@ abstract class WC_Block_Abstract_Payline extends AbstractPaymentMethodType {
     {
         return array_merge([
             'title'       => $this->get_setting( 'title' ),
+            'icon'       => $this->get_icons(),
             'description' => strip_tags($this->get_setting( 'description' ), '<br>'),
             'supports'    => $this->get_supported_features(),
             'canMakePayment'    => $this->can_make_payment(),
@@ -95,5 +96,17 @@ abstract class WC_Block_Abstract_Payline extends AbstractPaymentMethodType {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @return array
+     */
+    protected function get_icons()
+    {
+        return [
+                'id' => $this->name,
+                'src' =>  !empty($this->settings['custom_icon']) ? $this->settings['custom_icon'] : WCPAYLINE_PLUGIN_URL . 'assets/images/icone-monext.svg',
+                'alt' => __( 'Icon for '.$this->name.' payment gateway' , 'payline' ),
+            ];
     }
 }

@@ -11,22 +11,14 @@ jobs:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
 
-      - name: Setup node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: '.nvmrc'
+      - name: 🔧 Setup environment
+        uses: ./.github/actions/setup-env
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build project
+      - name: 📦 Build project
         run: npm run build
 
-      - name: Unzip in Payline folder
-        run: rm -rf ./payline && mkdir release && unzip woocommerce-gateway-payline.zip -d ./payline
-
-      - name: Repackage
-        run: zip -r woocommerce-payline_v${{ github.ref_name }}.zip ./payline
+      - name: Rename
+        run: mv woocommerce-gateway-payline.zip woocommerce-payline_v${{ github.ref_name }}.zip
 
       - name: Upload asset using gh CLI
         env:

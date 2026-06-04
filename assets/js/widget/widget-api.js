@@ -2,6 +2,29 @@ const customizeWidget = paylineData.customizeWidget === 'yes';
 const ctaLabel = paylineData.ctaButton;
 const textUnderCta = paylineData.textUnderCta;
 
+function getTermsElement() {
+    return document.getElementById('terms-and-conditions') || document.getElementById('terms');
+}
+
+function setWidgetVisibility()
+{
+    const termsElement = getTermsElement();
+    const widgetMainContainer = document.getElementById('PaylineWidget');
+    if ( !termsElement || !widgetMainContainer ) {
+        return;
+    }
+    widgetMainContainer.style.display = termsElement.checked ? '' : 'none';
+}
+
+function bindTermsChangeEvent() {
+    const termsElement = getTermsElement();
+    if ( !termsElement ) {
+        return;
+    }
+
+    termsElement.addEventListener('change', setWidgetVisibility);
+}
+
 window.eventDidshowstate = function (e) {
     if ( e.state && e.state === "PAYMENT_METHODS_LIST" && customizeWidget ) {
         if (ctaLabel != "") {
@@ -11,6 +34,9 @@ window.eventDidshowstate = function (e) {
         if (textUnderCta) {
             jQuery(".PaylineWidget .pl-pay-btn, .PaylineWidget .pl-btn").after(jQuery("<p>").html(textUnderCta).addClass("pl-text-under-cta"))
         }
+
+        bindTermsChangeEvent();
+        setWidgetVisibility();
     }
 }
 hideReceivedContext = function() {

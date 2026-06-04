@@ -8,8 +8,9 @@ composer.json export-ignore
 composer.lock export-ignore
 webpack.config.js export-ignore
 tasks export-ignore
-test export-ignore
+phpunit.xml export-ignore
 payline export-ignore
 node_modules export-ignore
 .nvmrc export-ignore
 .gitlab-ci.yml export-ignore
+sonar-project.properties export-ignore

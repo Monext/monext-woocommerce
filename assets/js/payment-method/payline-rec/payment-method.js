@@ -16,6 +16,7 @@ const defaultLabel = __(
     'payline'
 );
 const label = decodeEntities( settings?.title || '' ) || defaultLabel;
+const icons = [settings.icon];
 
 /**
  * Content component
@@ -43,8 +44,11 @@ const Content = (props) => {
  * @param {*} props Props from payment API.
  */
 const Label = ( props ) => {
-    const { PaymentMethodLabel } = props.components;
-    return <PaymentMethodLabel text={ label } />;
+    const { PaymentMethodLabel, PaymentMethodIcons } = props.components;
+    return [
+        <PaymentMethodLabel text={ label } />,
+        <PaymentMethodIcons icons={ icons } />
+    ];
 };
 
 

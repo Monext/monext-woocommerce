@@ -3,7 +3,7 @@
  * Plugin Name: Monext
  * Plugin URI: https://docs.payline.com/display/DT/Plugin+WooCommerce
  * Description: integrations of Monext payment solution in your WooCommerce store
- * Version: 1.5.9
+ * Version: 1.5.10
  * Author: Monext
  * Text Domain: monext-online-woocommerce
  * Author URI: http://www.monext.fr
@@ -37,7 +37,7 @@ if (!defined('ABSPATH')) exit;
 define('WCPAYLINE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WCPAYLINE_PLUGIN_CLASS', plugin_basename(__FILE__));
-define('WCPAYLINE_PLUGIN_VERSION', '1.5.9');
+define('WCPAYLINE_PLUGIN_VERSION', '1.5.10');
 
 //require_once plugin_dir_path(__FILE__) . 'includes/admin/payline-logs-viewer.php';
 
@@ -149,11 +149,25 @@ add_action('woocommerce_init', 'woocommerce_payline_init');
  * @param $methods
  * @return mixed
  */
-function woocommerce_payline_add_method($methods) {
+function woocommerce_payline_add_method($methods)
+{
+    global $current_section;
     $methods[] = 'WC_Gateway_Payline';
-    $methods[] = 'WC_Gateway_Payline_CPT';
-    $methods[] = 'WC_Gateway_Payline_NX';
-    $methods[] = 'WC_Gateway_Payline_REC';
+
+    $cpt_settings = get_option('woocommerce_payline_cpt_settings');
+    if ($current_section === 'payline_cpt' || (!empty($cpt_settings) && $cpt_settings["enabled"] === "yes")) {
+        $methods[] = 'WC_Gateway_Payline_CPT';
+    }
+
+    $nx_settings = get_option('woocommerce_payline_nx_settings');
+    if ($current_section === 'payline_nx' || (!empty($nx_settings) && $nx_settings["enabled"] === "yes")) {
+        $methods[] = 'WC_Gateway_Payline_NX';
+    }
+
+    $rec_settings = get_option('woocommerce_payline_rec_settings');
+    if ($current_section === 'payline_rec' || (!empty($rec_settings) && $rec_settings["enabled"] === "yes")) {
+        $methods[] = 'WC_Gateway_Payline_REC';
+    }
 
     return $methods;
 }
@@ -427,6 +441,41 @@ function checkVersion()
         update_plugin_version('1.5.6');
     }
 }
+
+/**
+ * Display contract label in order details in admin
+ *
+ * @param WC_Order $order
+ * @return void
+ */
+function woocommerce_payline_display_contract_label($order)
+{
+    $contract_number = $order->get_meta('_contract_number', true);
+    if (empty($contract_number)) {
+        return;
+    }
+
+    $contracts_list = unserialize(get_option('woocommerce_payline_pos_contracts_list', ''));
+    if (!is_array($contracts_list) || empty($contracts_list)) {
+        return;
+    }
+
+    $contract_label = '';
+    foreach ($contracts_list as $contract) {
+        if (isset($contract['contractNumber']) && $contract['contractNumber'] == $contract_number) {
+            $contract_label = isset($contract['label']) ? $contract['label'] : '';
+            break;
+        }
+    }
+
+    if (!empty($contract_label)) {
+        echo '<div>';
+        echo '<strong>'.__('Monext contract used', 'payline').' : </strong>' . esc_html($contract_label);
+        echo '</div>';
+    }
+}
+
+add_action('woocommerce_admin_order_data_after_payment_info', 'woocommerce_payline_display_contract_label');
 
 /**
  * Ajout du wallet dans l'espace mon compte

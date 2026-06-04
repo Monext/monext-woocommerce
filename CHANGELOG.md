@@ -1,5 +1,19 @@
 ## Changelog
 
+### 1.5.10
+* Remove vendors from repository
+* Fix error "Uncaught TypeError" when no contract selected, Fix #24
+* Improve phpUnit tests
+* Add Monext contract label on order page
+* Check CGVs before place order, Fix #27
+* Allow to reorder Monext payment methods, Fix #26
+* Allow to change Monext payment logo, Fix #29
+
+#### Environment (Development, QA validation)
+* WordPress version: 6.8.3
+* WooCommerce version: 9.8.5, 10.2.2
+* php 8.4
+
 ### 1.5.9
 * Reuse draft_order_id in checkout
 * Add control on order exists when retrieving token
