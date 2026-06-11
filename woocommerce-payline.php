@@ -210,11 +210,6 @@ add_filter( 'woocommerce_valid_order_statuses_for_order_again', 'woocommerce_pay
  * @return mixed
  */
 function woocommerce_payline_enable_gateway_order_pay( $available_gateways ) {
-    if ( is_checkout() && is_wc_endpoint_url( 'order-pay' ) ) {
-        unset( $available_gateways['payline_cpt'] );
-        unset( $available_gateways['payline_nx'] );
-        unset( $available_gateways['payline_rec'] );
-    }
     unset( $available_gateways['payline'] );
     return $available_gateways;
 }
