@@ -796,7 +796,8 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         $doWebPaymentRequest['buyer']['lastName'] = $this->cleanSubstr($order->get_billing_last_name(), 0, 100);
         $doWebPaymentRequest['buyer']['firstName'] = $this->cleanSubstr($order->get_billing_first_name(), 0, 100);
         $doWebPaymentRequest['buyer']['customerId'] = $order->get_user_id() ? $this->cleanSubstr($order->get_user_id(), 0, 50) : 0;
-        $doWebPaymentRequest['buyer']['email'] = $this->cleanSubstr($order->get_billing_email(), 0, 150);
+        $billingEmail = !empty($order->get_billing_email()) ? $order->get_billing_email() : WC()->customer->get_billing_email();
+        $doWebPaymentRequest['buyer']['email'] = $this->cleanSubstr($billingEmail, 0, 150);
         $doWebPaymentRequest['buyer']['ip'] = $_SERVER['REMOTE_ADDR'];
         $doWebPaymentRequest['buyer']['mobilePhone'] = $this->cleanSubstr(preg_replace("/[^0-9.]/", '', $order->get_billing_phone()), 0, 15);
         if($this->settings['wallet'] == 'yes'){
@@ -1092,9 +1093,12 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             preg_match('/inshop-(.*)/', $this->settings['widget_integration'],$match);
         }
 
-        return '<div id="PaylineWidget" 
+        $template = isset($match[1]) ? $match[1] : '';
+
+        return '<div id="PaylineWidget"
+                    data-user-connected="' . (is_user_logged_in() ? 'true' : 'false') . '"
                     data-token="'.$token.'" 
-                    data-template="'.$match[1].'" 
+                    data-template="'.$template.'" 
                     data-embeddedredirectionallowed="true" 
                     data-event-didshowstate="eventDidshowstate" 
                     data-event-finalstatehasbeenreached="eventFinalstatehasbeenreached">
@@ -1673,6 +1677,10 @@ cancelPaylinePayment = function ()
         if(!empty($globalsSettings)){
             unset($globalsSettings['enabled']);
             $this->settings = array_merge($this->settings, $globalsSettings);
+        }
+
+        if ( !is_user_logged_in()) {
+            $this->settings['widget_integration'] = 'redirection';
         }
     }
 

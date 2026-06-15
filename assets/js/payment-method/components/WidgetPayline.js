@@ -15,12 +15,17 @@ const WidgetPayline = ( {settings, checkoutContext} ) => {
 
     //--> Chargement des CSS et JS nécessaires pour le widget Payline
     useEffect( () => {
-        if ( checkoutContext.activePaymentMethod === "payline_cpt" && Payline?.Api ) {
-            Payline.Api.reset();
+        try {
+            if ( checkoutContext.activePaymentMethod === "payline_cpt" && Payline?.Api ) {
+                Payline.Api.reset();
+            }
+        } catch (error) {
+            console.warn("Error loading Payline widget assets:", error);
         }
 
         const placeOrderButton = document.querySelector(".wc-block-components-checkout-place-order-button");
-        if ( placeOrderButton ) {
+        const widgetPaylineContainerConnected = document.querySelector('#PaylineWidget[data-user-connected="true"]');
+        if ( widgetPaylineContainerConnected && placeOrderButton ) {
             placeOrderButton.style.display = "none";
         }
 

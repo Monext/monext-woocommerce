@@ -31,12 +31,14 @@ class WC_Block_Payline_CPT extends WC_Block_Abstract_Payline {
     public function get_payment_method_additionnal_data()
     {
         $payline_widget_div = '';
+        $widget_integration = 'redirection';
 
-        if (is_checkout() && !empty($this->settings['widget_integration']) && ($this->settings['widget_integration'] != 'redirection'))
+        if (is_user_logged_in() && is_checkout() && !empty($this->settings['widget_integration']) && ($this->settings['widget_integration'] != 'redirection'))
         {
             /** @var WC_Abstract_Payline $gateway */
             $gateway = new $this->gateway;
             $gateway->processWidgetScripts();
+            $widget_integration = $gateway->settings['widget_integration'];
 
             $order_id = null;
             if ( function_exists('WC') && WC()->session && method_exists( WC()->session, 'get' ) ) {
@@ -54,7 +56,7 @@ class WC_Block_Payline_CPT extends WC_Block_Abstract_Payline {
 
         return [
             'payline_widget_div' => $payline_widget_div,
-            'widget_integration' => $this->settings['widget_integration']
+            'widget_integration' => $widget_integration
         ];
     }
 }
