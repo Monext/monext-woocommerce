@@ -39,21 +39,39 @@ define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WCPAYLINE_PLUGIN_CLASS', plugin_basename(__FILE__));
 define('WCPAYLINE_PLUGIN_VERSION', '1.5.10');
 
-//require_once plugin_dir_path(__FILE__) . 'includes/admin/payline-logs-viewer.php';
+function woocommerce_payline_activation()
+{
+    if (!is_plugin_active('woocommerce/woocommerce.php')) {
+        deactivate_plugins(plugin_basename(__FILE__));
 
-function woocommerce_payline_activation() {
-	if (!is_plugin_active('woocommerce/woocommerce.php')) {
-		deactivate_plugins(plugin_basename(__FILE__));
+        load_plugin_textdomain('payline', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 
-		load_plugin_textdomain('payline', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-		
-		$message = sprintf(__('Sorry! In order to use WooCommerce %s Payment plugin, you need to install and activate the WooCommerce plugin.', 'payline'), 'Payline');
-		wp_die($message, 'WooCommerce Payline Gateway Plugin', array('back_link' => true));
-	}
+        $message = sprintf(__('Sorry! In order to use WooCommerce %s Payment plugin, you need to install and activate the WooCommerce plugin.', 'payline'), 'Payline');
+        wp_die($message, 'WooCommerce Payline Gateway Plugin', array('back_link' => true));
+    } elseif (!wc_payline_vendors_loaded()) {
+        deactivate_plugins(plugin_basename(__FILE__));
+        load_plugin_textdomain('payline', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+        $message = __('The plugin is not installed correctly. You should have downloaded the package archive named woocommerce-payline_vx.y.z.zip from GitHub:', 'payline').' <a href="https://github.com/Monext/monext-woocommerce/releases" target="_blank">https://github.com/Monext/monext-woocommerce/releases</a>';
+        wp_die($message, 'Monext Plugin install failed', array('back_link' => true));
+    }
 
     flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'woocommerce_payline_activation');
+
+
+add_action( 'admin_notices', 'monext_woocommerce_missing_vendor_notice' );
+function monext_woocommerce_missing_vendor_notice() {
+    if (!wc_payline_vendors_loaded()) {
+        echo '<div class="notice notice-error is-dismissible">';
+        echo '<p><strong>Monext WooCommerce :</strong> ';
+        echo __('The plugin is not installed correctly. You should have downloaded the package archive named woocommerce-payline_vx.y.z.zip from GitHub:', 'payline');
+        echo ' <a href="https://github.com/Monext/monext-woocommerce/releases" target="_blank">https://github.com/Monext/monext-woocommerce/releases</a>';
+        echo '</p></div>';
+
+        deactivate_plugins(plugin_basename(__FILE__));
+    }
+}
 
 function woocommerce_payline_desactivation() {
     delete_option('woocommerce_payline_settings');
@@ -73,32 +91,14 @@ register_deactivation_hook(__FILE__, 'woocommerce_payline_desactivation');
  * inserts class gateway
  */
 function woocommerce_payline_init() {
+	if (!wc_payline_vendors_loaded()) {
+		return;
+	}
+
+    require_once __DIR__ . '/vendor/autoload.php';
+
 	// Load translation files
 	load_plugin_textdomain('payline', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-
-    if ( ! class_exists( 'WC_Abstract_Payline', false ) ) {
-        include_once 'includes/gateway/class-wc-gateway-abstract-payline.php';
-    }
-
-    if ( ! class_exists( 'WC_Abstract_Recurring_Payline_NX', false ) ) {
-        include_once 'includes/gateway/class-wc-gateway-abstract-recurring-payline.php';
-    }
-	
-	if (!class_exists('WC_Gateway_Payline')) {
-		require_once 'includes/gateway/class-wc-gateway-payline.php';
-	}
-
-	if (!class_exists('WC_Gateway_Payline_CPT')) {
-		require_once 'includes/gateway/class-wc-gateway-payline-cpt.php';
-	}
-
-    if (!class_exists('WC_Gateway_Payline_NX')) {
-        require_once 'includes/gateway/class-wc-gateway-payline-nx.php';
-    }
-
-    if (!class_exists('WC_Gateway_Payline_REC')) {
-        require_once 'includes/gateway/class-wc-gateway-payline-rec.php';
-    }
 
 	if (!class_exists('WC_Block_Abstract_Payline')) {
 		require_once 'includes/blocks/class-wc-blocs-abstract-payline.php';
@@ -124,9 +124,33 @@ function woocommerce_payline_init() {
 		require_once 'includes/class-wc-payline-upgrades.php';
 	}
 
-	if (!class_exists('WC_Payline_SDK')) {
-		require_once 'includes/class-wc-payline-payment-gateway.php';
-	}
+    if (!class_exists('WC_Abstract_Payline')) {
+        require_once 'includes/gateway/class-wc-gateway-abstract-payline.php';
+    }
+
+    if (!class_exists('WC_Payline_SDK')) {
+        require_once 'includes/class-wc-payline-payment-gateway.php';
+    }
+
+    if (!class_exists('WC_Gateway_Payline')) {
+        require_once 'includes/gateway/class-wc-gateway-payline.php';
+    }
+
+    if ( !class_exists( 'WC_Abstract_Recurring_Payline_NX', false ) ) {
+        include_once 'includes/gateway/class-wc-gateway-abstract-recurring-payline.php';
+    }
+
+    if (!class_exists('WC_Gateway_Payline_CPT')) {
+        require_once 'includes/gateway/class-wc-gateway-payline-cpt.php';
+    }
+
+    if (!class_exists('WC_Gateway_Payline_NX')) {
+        require_once 'includes/gateway/class-wc-gateway-payline-nx.php';
+    }
+
+    if (!class_exists('WC_Gateway_Payline_REC')) {
+        require_once 'includes/gateway/class-wc-gateway-payline-rec.php';
+    }
 
     if (!class_exists('PaylineWallet')) {
         require_once 'includes/front/payline-wallet.php';
@@ -136,13 +160,35 @@ function woocommerce_payline_init() {
         update_option( 'wc_payline_version', '1.0.0' );
     }
 
-    require_once 'vendor/autoload.php';
-
     woocommerce_payline_upgrade();
+
+    /**
+     * Adding wallet into “My Account” section
+     *
+     */
+    add_filter('woocommerce_get_query_vars', array( 'PaylineWallet', 'addQueryVars' ) );
+    add_filter('woocommerce_account_menu_items', array( 'PaylineWallet', 'addUserAccountMenuItem' ) );
+    add_action('woocommerce_account_my-payline-wallet_endpoint', array( 'PaylineWallet', 'getPageContent' ));
+    add_filter('woocommerce_endpoint_my-payline-wallet_title', array('PaylineWallet','getPageTitle'), 42, 2);
+    add_action('wp_enqueue_scripts', array( 'PaylineWallet', 'payline_add_front_styles' ));
+
+    /**
+     * PaylineLogsViewer endpoint déclaration
+     *
+     */
+    add_action('wp_ajax_load_log', array( 'PaylineLogsViewer', 'doAjaxGetLogs' ));
+    add_action('wp_ajax_nopriv_load_log', array( 'PaylineLogsViewer', 'doAjaxGetLogs' ));
 }
 add_action('woocommerce_init', 'woocommerce_payline_init');
 
-
+/**
+ * Vérifie si les dépendances vendor sont présentes.
+ *
+ * @return bool
+ */
+function wc_payline_vendors_loaded(): bool {
+    return file_exists(__DIR__ . '/vendor/autoload.php');
+}
 
 /**
  * adds method to woocommerce methods
@@ -151,6 +197,10 @@ add_action('woocommerce_init', 'woocommerce_payline_init');
  */
 function woocommerce_payline_add_method($methods)
 {
+    if (!wc_payline_vendors_loaded()) {
+        return $methods;
+    }
+
     global $current_section;
 
     $current_section_fallback = false;
@@ -331,6 +381,10 @@ add_filter( 'woocommerce_create_order', 'payline_reuse_draft_order_for_classic_c
  * @since 1.5.0
  */
 function payline_register_payment_methods() {
+	if (!wc_payline_vendors_loaded()) {
+		return;
+	}
+
 	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
@@ -352,6 +406,10 @@ add_action('admin_menu', 'payline_add_logs_viewer_in_tools_submenu');
  */
 function payline_add_logs_viewer_in_tools_submenu()
 {
+    if (!wc_payline_vendors_loaded()) {
+        return;
+    }
+
 	add_management_page(
 		__('Monext Logs Viewer'),
 		__('Monext Logs Viewer'),
@@ -400,9 +458,6 @@ function payline_log_enqueue_admin_styles( $hook_suffix ) {
 		wp_enqueue_style( 'payline_admin_styles' );
 	}
 }
-
-add_action('wp_ajax_load_log', array( 'PaylineLogsViewer', 'doAjaxGetLogs' ));
-add_action('wp_ajax_nopriv_load_log', array( 'PaylineLogsViewer', 'doAjaxGetLogs' ));
 
 /**
  * Update plugin version database. Useful for plugin upgrade scripts
@@ -479,13 +534,3 @@ function woocommerce_payline_display_contract_label($order)
 }
 
 add_action('woocommerce_admin_order_data_after_payment_info', 'woocommerce_payline_display_contract_label');
-
-/**
- * Ajout du wallet dans l'espace mon compte
- * 
- */
-add_filter('woocommerce_get_query_vars', array( 'PaylineWallet', 'addQueryVars' ) );
-add_filter('woocommerce_account_menu_items', array( 'PaylineWallet', 'addUserAccountMenuItem' ) );
-add_action('woocommerce_account_my-payline-wallet_endpoint', array( 'PaylineWallet', 'getPageContent' ));
-add_filter('woocommerce_endpoint_my-payline-wallet_title', array('PaylineWallet','getPageTitle'), 42, 2);
-add_action('wp_enqueue_scripts', array( 'PaylineWallet', 'payline_add_front_styles' ));
