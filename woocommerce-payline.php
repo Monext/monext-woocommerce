@@ -152,20 +152,28 @@ add_action('woocommerce_init', 'woocommerce_payline_init');
 function woocommerce_payline_add_method($methods)
 {
     global $current_section;
+
+    $current_section_fallback = false;
+    if(!empty($current_section)) {
+        $current_section_fallback = $current_section;
+    }elseif (!empty($_GET['section'])) {
+        $current_section_fallback = sanitize_key($_GET['section']);
+    }
+
     $methods[] = 'WC_Gateway_Payline';
 
     $cpt_settings = get_option('woocommerce_payline_cpt_settings');
-    if ($current_section === 'payline_cpt' || (!empty($cpt_settings) && $cpt_settings["enabled"] === "yes")) {
+    if ($current_section_fallback === 'payline_cpt' || (!empty($cpt_settings) && $cpt_settings["enabled"] === "yes")) {
         $methods[] = 'WC_Gateway_Payline_CPT';
     }
 
     $nx_settings = get_option('woocommerce_payline_nx_settings');
-    if ($current_section === 'payline_nx' || (!empty($nx_settings) && $nx_settings["enabled"] === "yes")) {
+    if ($current_section_fallback === 'payline_nx' || (!empty($nx_settings) && $nx_settings["enabled"] === "yes")) {
         $methods[] = 'WC_Gateway_Payline_NX';
     }
 
     $rec_settings = get_option('woocommerce_payline_rec_settings');
-    if ($current_section === 'payline_rec' || (!empty($rec_settings) && $rec_settings["enabled"] === "yes")) {
+    if ($current_section_fallback === 'payline_rec' || (!empty($rec_settings) && $rec_settings["enabled"] === "yes")) {
         $methods[] = 'WC_Gateway_Payline_REC';
     }
 
