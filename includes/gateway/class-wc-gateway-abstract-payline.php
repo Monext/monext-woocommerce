@@ -459,7 +459,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             return null;
         }
 
-        if ($this->is_available() && is_checkout() && ! is_wc_endpoint_url() && WC()->session) {
+        if ($this->is_available() && !is_wc_endpoint_url() && WC()->session) {
             return WC()->session->get( 'store_api_draft_order');
         }
         return null;
@@ -575,11 +575,11 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
         if($this instanceof WC_Gateway_Payline_CPT) {
             wp_localize_script( 'payline-widget-api', 'paylineData', [
-            'customizeWidget' => $this->getConfigValueIfExists('widget_settings_customize'),
                 'customizeWidget' => $this->getConfigValueIfExists('widget_settings_customize'),
                 'ctaButton' => $this->getConfigValueIfExists('widget_settings_cta_label'),
                 'textUnderCta' => $this->getConfigValueIfExists('widget_settings_text_under_cta'),
-                'widget_integration' => $this->settings['widget_integration']
+                'widget_integration' => $this->settings['widget_integration'],
+                'payline_checkout_validator_nonce' => wp_create_nonce( 'payline_checkout_validator' ),
             ]);
         }
 
@@ -1097,10 +1097,11 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
         return '<div id="PaylineWidget"
                     data-user-connected="' . (is_user_logged_in() ? 'true' : 'false') . '"
-                    data-token="'.$token.'" 
+                    data-token="'.$token.'"
                     data-template="'.$template.'" 
-                    data-embeddedredirectionallowed="true" 
-                    data-event-didshowstate="eventDidshowstate" 
+                    data-embeddedredirectionallowed="true"
+                    data-event-didshowstate="eventDidshowstate"
+                    data-event-beforepayment="beforePayement"
                     data-event-finalstatehasbeenreached="eventFinalstatehasbeenreached">
                 </div>';
     }
@@ -1119,7 +1120,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
     }
 
         echo '<script type="text/javascript">
-        
+
 const ctaLabel = "' . (!empty($ctaButton) ? strip_tags($ctaButton) : '') . '";
 const textUnderCta = "' . (!empty($textUnderCta) ? strip_tags($textUnderCta) : '') . '";
 
@@ -1128,7 +1129,7 @@ window.eventDidshowstate = function (e) {
         if (ctaLabel != "") {
             jQuery(".PaylineWidget .pl-pay-btn, .PaylineWidget .pl-btn").html(ctaLabel.replace("{{amount}}", Payline.Api.getContextInfo("PaylineFormattedAmount")));
         }
-        
+
         if (textUnderCta) {
             jQuery(".PaylineWidget .pl-pay-btn, .PaylineWidget .pl-btn").after(jQuery("<p>").html(textUnderCta).addClass("pl-text-under-cta"))
         }
@@ -1142,7 +1143,7 @@ hideReceivedContext = function() {
 };
 
 eventFinalstatehasbeenreached= function (e) {
-    if ( e.state === "PAYMENT_SUCCESS" ) {  
+    if ( e.state === "PAYMENT_SUCCESS" ) {
         //--> Redirect to success page
         //--> Ticket is hidden by CSS
         //--> Wait for DOM update to simulate a click on the ticket confirmation button
@@ -1677,10 +1678,6 @@ cancelPaylinePayment = function ()
         if(!empty($globalsSettings)){
             unset($globalsSettings['enabled']);
             $this->settings = array_merge($this->settings, $globalsSettings);
-        }
-
-        if ( !is_user_logged_in()) {
-            $this->settings['widget_integration'] = 'redirection';
         }
     }
 

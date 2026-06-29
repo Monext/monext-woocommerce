@@ -59,7 +59,7 @@ abstract class WC_Abstract_Recurring_Payline_NX extends WC_Abstract_Payline {
         $this->form_fields['custom_icon'] = array(
             'title' => __( 'Custom icon', 'payline' ),
             'type' => 'url',
-            'description' => __('Collez le lien direct de votre image hébergée dans la bibliothèque des médias WordPress. Laissez ce champ vide pour utiliser l\'icône par défaut.', 'payline'),
+            'description' => __('Paste the direct link to your image hosted in the WordPress media library. Leave this field blank to use the default icon.', 'payline'),
             'default' => ''
         );
 

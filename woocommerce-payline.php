@@ -156,6 +156,10 @@ function woocommerce_payline_init() {
         require_once 'includes/front/payline-wallet.php';
     }
 
+    if (!class_exists('PaylineValidateCheckoutEndpoint')) {
+        require_once 'includes/payline-validate-checkout-endpoint.php';
+    }
+
     if(!get_option( 'wc_payline_version' )){
         update_option( 'wc_payline_version', '1.0.0' );
     }
@@ -534,3 +538,7 @@ function woocommerce_payline_display_contract_label($order)
 }
 
 add_action('woocommerce_admin_order_data_after_payment_info', 'woocommerce_payline_display_contract_label');
+add_action('wc_ajax_payline_checkout_validator', function () {
+    $endpoint = new PaylineValidateCheckoutEndpoint();
+    $endpoint->handle_request();
+});

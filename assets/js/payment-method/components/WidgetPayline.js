@@ -1,4 +1,6 @@
 import { useEffect, useRef } from 'react';
+import { useValidateCheckout } from '@woocommerce/blocks-checkout';
+
 
 const addCustomCss = (cssContent, attributes, container) => {
     const style = document.createElement("style");
@@ -12,6 +14,8 @@ const addCustomCss = (cssContent, attributes, container) => {
 const WidgetPayline = ( {settings, checkoutContext} ) => {
 
     const previousToken = useRef(null);
+    const validateCheckout = useValidateCheckout();
+
 
     //--> Chargement des CSS et JS nécessaires pour le widget Payline
     useEffect( () => {
@@ -25,7 +29,7 @@ const WidgetPayline = ( {settings, checkoutContext} ) => {
 
         const placeOrderButton = document.querySelector(".wc-block-components-checkout-place-order-button");
         const widgetPaylineContainerConnected = document.querySelector('#PaylineWidget[data-user-connected="true"]');
-        if ( widgetPaylineContainerConnected && placeOrderButton ) {
+        if ( placeOrderButton ) {
             placeOrderButton.style.display = "none";
         }
 
@@ -41,6 +45,14 @@ const WidgetPayline = ( {settings, checkoutContext} ) => {
     }, [] );
 
     useEffect(() => {
+        window.paylineBlockValidateCheckout = validateCheckout;
+
+        return () => {
+            delete window.paylineBlockValidateCheckout;
+        };
+    }, [validateCheckout]);
+
+    useEffect(() => {
         const checkoutToken = checkoutContext.cartData.extensions?.monext_payline?.widget_token;
         const paylineWidgetContainer = document.getElementById('PaylineWidget');
         if (checkoutToken && (previousToken.current !== undefined && previousToken.current !== checkoutToken)) {
@@ -49,7 +61,9 @@ const WidgetPayline = ( {settings, checkoutContext} ) => {
                 Payline.Api.reset();
             }
         }
-        previousToken.current = checkoutToken;
+        if(checkoutToken !== undefined) {
+            previousToken.current = checkoutToken;
+        }
     }, [checkoutContext])
 
     return (
