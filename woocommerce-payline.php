@@ -374,6 +374,7 @@ function payline_reuse_draft_order_for_classic_checkout( $order_id, $checkout )
         return $order_id;
     }
 
+    (new OrderController())->update_order_from_cart($order);
     return $draft_order_id;
 }
 add_filter( 'woocommerce_create_order', 'payline_reuse_draft_order_for_classic_checkout', 10, 2 );

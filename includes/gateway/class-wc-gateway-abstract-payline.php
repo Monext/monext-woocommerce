@@ -665,6 +665,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
      */
     protected function getCachedDWPDataForOrder(WC_Order $order, $key= null, $available = false) {
         $tokenDecoded = $this->getArrayTokenForOrder($order);
+        (new OrderController())->update_order_from_cart($order);
 
         $token = $tokenDecoded['token'] ?? null;
         if($token && !empty($tokenDecoded['date'])) {
@@ -765,6 +766,8 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
      */
     protected function getWebPaymentRequest(WC_Order $order)
     {
+        (new OrderController())->update_order_from_cart($order);
+        
         $doWebPaymentRequest = array();
         $doWebPaymentRequest['version'] = $this->APIVersion;
         $doWebPaymentRequest['payment']['amount'] = round($order->get_total() * 100);

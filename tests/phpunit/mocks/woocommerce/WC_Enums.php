@@ -41,3 +41,32 @@ if (!class_exists('WC_Log_Handler_File')) {
         }
     }
 }
+
+// Mock WooCommerce StoreApi OrderController
+if (!class_exists('MockOrderController')) {
+    class MockOrderController {
+        public function update_order_from_cart(\WC_Order $order, $update_totals = true) {
+            return $order;
+        }
+
+        public function create_order_from_cart() {
+            add_filter('woocommerce_default_order_status', function() {
+                return 'checkout-draft';
+            });
+
+            $order = new \WC_Order();
+            $order->set_status('checkout-draft');
+            $order->set_created_via('store-api');
+
+            remove_filter('woocommerce_default_order_status', function() {
+                return 'checkout-draft';
+            });
+
+            return $order;
+        }
+    }
+}
+
+if (!class_exists('Automattic\WooCommerce\StoreApi\Utilities\OrderController')) {
+    class_alias('MockOrderController', 'Automattic\WooCommerce\StoreApi\Utilities\OrderController');
+}
