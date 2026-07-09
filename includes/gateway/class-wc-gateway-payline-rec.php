@@ -78,7 +78,7 @@ class WC_Gateway_Payline_REC extends WC_Abstract_Recurring_Payline_NX {
             'title' => __('Primary contracts', 'payline'),
             'type' => 'multiselect',
             'options' => $this->getContractsList(),
-            'description' => __('Contracts displayed on web payment page.', 'payline')
+            'description' => $this->getContractDescription()
         );
     }
 

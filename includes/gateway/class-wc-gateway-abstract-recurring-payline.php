@@ -127,4 +127,18 @@ abstract class WC_Abstract_Recurring_Payline_NX extends WC_Abstract_Payline {
         return false;
     }
 
+    /**
+     * @return string
+     */
+    protected function getContractDescription()
+    {
+        $baseDesc = __('Contracts displayed on web payment page.', 'payline');
+
+        $additionalDescription = '<br/><strong>'
+            . __( 'PLEASE NOTE: Select only “card” payment methods.', 'payline' )
+            . '</strong>';
+
+        return $baseDesc . $additionalDescription;
+    }
+
 }

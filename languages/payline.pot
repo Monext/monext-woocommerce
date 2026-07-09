@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-29T09:27:40+00:00\n"
+"POT-Creation-Date: 2026-07-09T12:50:05+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 
@@ -282,6 +282,15 @@ msgstr ""
 msgid "A transaction every two years"
 msgstr ""
 
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:135
+#: includes/gateway/class-wc-gateway-payline-cpt.php:180
+msgid "Contracts displayed on web payment page."
+msgstr ""
+
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:138
+msgid "PLEASE NOTE: Select only “card” payment methods."
+msgstr ""
+
 #: includes/gateway/class-wc-gateway-payline-cpt.php:104
 msgid "Wallet"
 msgstr ""
@@ -352,12 +361,6 @@ msgstr ""
 #: includes/gateway/class-wc-gateway-payline-nx.php:45
 #: includes/gateway/class-wc-gateway-payline-rec.php:78
 msgid "Primary contracts"
-msgstr ""
-
-#: includes/gateway/class-wc-gateway-payline-cpt.php:180
-#: includes/gateway/class-wc-gateway-payline-nx.php:48
-#: includes/gateway/class-wc-gateway-payline-rec.php:81
-msgid "Contracts displayed on web payment page."
 msgstr ""
 
 #: includes/gateway/class-wc-gateway-payline-cpt.php:188
@@ -719,8 +722,8 @@ msgid "Proxy setting"
 msgstr ""
 
 #: templates/admin/logs-viewer.php:11
-#: woocommerce-payline.php:418
 #: woocommerce-payline.php:419
+#: woocommerce-payline.php:420
 msgid "Monext Logs Viewer"
 msgstr ""
 
@@ -756,7 +759,7 @@ msgstr ""
 msgid "Logs Viewer"
 msgstr ""
 
-#: woocommerce-payline.php:535
+#: woocommerce-payline.php:536
 msgid "Monext contract used"
 msgstr ""
 

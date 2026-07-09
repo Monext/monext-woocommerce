@@ -433,9 +433,8 @@ msgstr "Point de vente"
 msgid "CONTRACTS"
 msgstr "CONTRATS"
 
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:135
 #: includes/gateway/class-wc-gateway-payline-cpt.php:180
-#: includes/gateway/class-wc-gateway-payline-nx.php:48
-#: includes/gateway/class-wc-gateway-payline-rec.php:81
 msgid "Contracts displayed on web payment page."
 msgstr "Contrats affichés sur la page de paiement en ligne."
 
@@ -658,8 +657,8 @@ msgid "Language used to display Monext web payment pages"
 msgstr "Langue utilisée pour afficher les pages de paiement Monext web"
 
 #: templates/admin/logs-viewer.php:11
-#: woocommerce-payline.php:418
 #: woocommerce-payline.php:419
+#: woocommerce-payline.php:420
 msgid "Monext Logs Viewer"
 msgstr "Visionneur de logs Monext"
 
@@ -755,7 +754,7 @@ msgstr ""
 msgid "CTA hover"
 msgstr ""
 
-#: woocommerce-payline.php:535
+#: woocommerce-payline.php:536
 msgid "Monext contract used"
 msgstr "Contrat Monext utilisé"
 
@@ -781,3 +780,7 @@ msgstr "Le plugin n'est pas correctement installé. Veuillez télécharger l'arc
 #: includes/gateway/class-wc-gateway-payline-cpt.php:203
 msgid "PLEASE NOTE: The Monext integration only works in Redirect mode for WooCommerce versions earlier than 10.6 and the Block checkout type"
 msgstr "ATTENTION : l'intégration Monext ne fonctionne qu'en mode Redirection pour les WooCommerce < 10.6 et le checkout de type Block"
+
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:138
+msgid "PLEASE NOTE: Select only “card” payment methods."
+msgstr "ATTENTION : Choisissez exclusivement des moyens de paiement de type “Carte”."
