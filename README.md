@@ -37,13 +37,16 @@ You can also check [our documentation](https://docs.monext.fr/display/DT/Payment
 ## Installation
 
 ### Requirements
-
-Theme need to be fully compatible with Woocommerce (may work even if theme is flagged as "Not declared")
+The current minimum requirements are:
+* php  7.4
+* WordPress 6.0
+* WooCommerce 10.6
+* Theme fully compatible with Woocommerce (may work even if theme is flagged as "Not declared")
 ![Screenshot showing theme compatibility in backoffice](doc/requirement_theme.png)
 
 ### Environment (Development, QA validation)
-* WordPress version: 6.8.1
-* WooCommerce version: 9.8.5
+* WordPress version: 7.0.1
+* WooCommerce version: 10.9.4
 * php 8.4
 
 ### Installation process

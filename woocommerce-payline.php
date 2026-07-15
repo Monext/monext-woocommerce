@@ -8,11 +8,13 @@
  * Text Domain: monext-online-woocommerce
  * Author URI: http://www.monext.fr
  * License: LGPL-3.0+
- * GitHub Plugin URI: https://github.com/PaylineByMonext/payline-woocommerce/
+ * GitHub Plugin URI: https://github.com/Monext/monext-woocommerce/
  * Github Branch: master
+ * Requires PHP: 7.4
+ * Requires at least: 6.0
  * Requires Plugins: woocommerce
- * WC tested up to: 4.9.2
- * 
+ * WC tested up to: 10.9.4
+ * WC requires at least: 10.6
  *  Copyright 2017  Monext  (email : support@payline.com)
 
     This program is free software; you can redistribute it and/or modify
