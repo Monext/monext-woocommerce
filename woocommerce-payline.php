@@ -6,12 +6,13 @@
  * Version: 1.5.11
  * Author: Monext
  * Text Domain: monext-online-woocommerce
- * Author URI: http://www.monext.fr
+ * Author URI: https://www.monext.fr
  * License: LGPL-3.0+
  * GitHub Plugin URI: https://github.com/Monext/monext-woocommerce/
  * Github Branch: master
  * Requires PHP: 7.4
  * Requires at least: 6.0
+ * Tested up to: 7.0.1
  * Requires Plugins: woocommerce
  * WC tested up to: 10.9.4
  * WC requires at least: 10.6
@@ -40,6 +41,13 @@ define('WCPAYLINE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WCPAYLINE_PLUGIN_CLASS', plugin_basename(__FILE__));
 define('WCPAYLINE_PLUGIN_VERSION', '1.5.11');
+
+if (is_admin()) {
+    if (!class_exists('WC_Payline_Update_Checker')) {
+        require_once __DIR__ . '/includes/class-wc-payline-update-checker.php';
+    }
+    new WC_Payline_Update_Checker(WCPAYLINE_PLUGIN_CLASS, 'Monext/monext-woocommerce', WCPAYLINE_PLUGIN_VERSION);
+}
 
 function woocommerce_payline_activation()
 {
