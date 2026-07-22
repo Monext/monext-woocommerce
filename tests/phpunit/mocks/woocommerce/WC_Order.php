@@ -35,6 +35,7 @@ if (!class_exists('WC_Order')) {
         private $items = array();
         private $user_id = 1;
         private $order_notes = array();
+        private $created_via = '';
 
         public function __construct($order_id = 0) {
             $this->id = $order_id > 0 ? $order_id : rand(1000, 9999);
@@ -62,6 +63,21 @@ if (!class_exists('WC_Order')) {
                 $this->add_order_note($note);
             }
             return true;
+        }
+
+        public function set_status($status) {
+            $this->status = $status;
+        }
+
+        public function set_created_via($channel) {
+            $this->created_via = $channel;
+        }
+
+        public function get_created_via() {
+            return $this->created_via;
+        }
+
+        public function calculate_totals() {
         }
 
         // ========================================================================

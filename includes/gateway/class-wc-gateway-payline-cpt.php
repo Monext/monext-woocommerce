@@ -10,6 +10,8 @@
  * WC tested up to: 4.0.1
  */
 
+use Automattic\Jetpack\Constants;
+use Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils;
 
 class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
 
@@ -159,7 +161,7 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
         $this->form_fields['custom_icon'] = array(
             'title' => __( 'Custom icon', 'payline' ),
             'type' => 'url',
-            'description' => __('Collez le lien direct de votre image hébergée dans la bibliothèque des médias WordPress. Laissez ce champ vide pour utiliser l\'icône par défaut.', 'payline'),
+            'description' => __('Paste the direct link to your image hosted in the WordPress media library. Leave this field blank to use the default icon.', 'payline'),
             'default' => ''
         );
 
@@ -187,20 +189,22 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
             'type' => 'title'
         );
 
-
-        $isBlockTheme = function_exists('wp_is_block_theme') && wp_is_block_theme();
-        $widgetIntegrationOptions = [
-            'redirection' => __( 'Redirection mode', 'payline' )
-        ];
-        $widgetIntegrationAdditionalDescription = '<br/><strong>'.__( 'Block theme do not allow widget integration.', 'payline' ).'</strong>';
-        if(!$isBlockTheme) {
-            $options = array_merge($widgetIntegrationOptions,  [
-                'inshop-tab' => __( 'Widget in-Shop Tab mode', 'payline' ),
-                'inshop-column' => __( 'Widget in-Shop Column mode', 'payline' ),
-                'inshop-lightbox' => __( 'Widget in-Shop Lightbox mode', 'payline' )
-            ]);
-            $widgetIntegrationAdditionalDescription = '';
+        $wcVersionCompatible = true;
+        if (class_exists('Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils')
+            && method_exists('Automattic\WooCommerce\Blocks\Utils\CartCheckoutUtils', 'is_checkout_block_default')
+            && CartCheckoutUtils::is_checkout_block_default()
+            && (defined('WC_VERSION') && version_compare(WC_VERSION, '10.6.0', '<'))) {
+            $wcVersionCompatible = false;
         }
+
+        $widgetIntegrationAdditionalDescription = "";
+        if (!$wcVersionCompatible) {
+            $widgetIntegrationAdditionalDescription .= '<br/><strong>'
+                . __( 'PLEASE NOTE: The Monext integration only works in Redirect mode for WooCommerce versions earlier than 10.6 and the Block checkout type', 'payline' )
+                . '</strong>';
+        }
+
+        $widgetIntegrationDescription = __( 'Integration mode of the payment widget in the shop. Contact Monext support for more details', 'payline' );
 
         $this->form_fields['widget_integration'] = array(
             'title' => __( 'Widget integration mode', 'payline' ),
@@ -212,7 +216,7 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
                 'inshop-lightbox' => __( 'In-Shop Lightbox mode', 'payline' ),
                 'redirection' => __( 'Redirection mode', 'payline' )
             ),
-            'description' => __( 'Integration mode of the payment widget in the shop. Contact Monext support for more details', 'payline' )
+            'description' => $widgetIntegrationDescription . $widgetIntegrationAdditionalDescription
         );
 
          $this->form_fields['widget_settings_customize'] = array(
