@@ -57,10 +57,10 @@ class PaylineWallet {
     /**
      * @return void
      */
-    public static function getPageContent()
+    public static function getPageContent($gateway = null)
     {
-        $paylineGateway     = new WC_Gateway_Payline();
-        $resultManage       = $paylineGateway->createManageWebWallet();
+        $paylineGateway = ($gateway !== null) ? $gateway : new WC_Gateway_Payline();
+        $resultManage   = $paylineGateway->createManageWebWallet();
 
         $tplData            = [];
         $tplData['token']   = null;

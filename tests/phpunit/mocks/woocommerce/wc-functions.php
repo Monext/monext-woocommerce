@@ -88,7 +88,21 @@ if (!function_exists('WC')) {
  * Mock du cart WooCommerce
  */
 class MockWcCart {
+    /**
+     * @var array Liste des items du panier
+     */
+    public static $cart_items = [];
+
     public function get_cart_hash() {
         return md5('test_cart_hash');
+    }
+
+    /**
+     * Retourne les items du panier
+     *
+     * @return array
+     */
+    public function get_cart() {
+        return self::$cart_items;
     }
 }

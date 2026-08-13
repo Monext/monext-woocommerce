@@ -59,8 +59,8 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
 
         $result = $this->gateway->process_refund($order->get_id(), 50.00, 'Test refund');
 
-        $this->assertInstanceOf('WP_Error', $result);
-        $this->assertEquals('error', $result->get_error_code());
+        $this->assertInstanceOf('WP_Error', $result, 'process_refund() doit retourner WP_Error sans transaction_id');
+        $this->assertEquals('error', $result->get_error_code(), 'Le code d\'erreur doit être "error"');
     }
 
     public function test_process_refund_accepts_order_with_transaction_id()
@@ -106,7 +106,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order, $response);
 
         // Vérifier que la commande est marquée comme payée
-        $this->assertEquals('completed', $this->order->get_status());
+        $this->assertEquals('completed', $this->order->get_status(), 'Le statut doit être "completed" pour un paiement accepté');
     }
 
     // =========================================
@@ -137,12 +137,12 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order, $response);
 
         // Vérifier que la commande est en attente
-        $this->assertEquals('on-hold', $this->order->get_status());
+        $this->assertEquals('on-hold', $this->order->get_status(), 'Le statut doit être "on-hold" pour une alerte fraude');
 
         // Vérifier que les métadonnées carte sont enregistrées
-        $this->assertEquals('TXN_FRAUD', $this->order->get_meta('Transaction ID'));
-        $this->assertEquals('497010XXXXXXXX40', $this->order->get_meta('Card number'));
-        $this->assertEquals('CB', $this->order->get_meta('Payment mean'));
+        $this->assertEquals('TXN_FRAUD', $this->order->get_meta('Transaction ID'), 'Le Transaction ID doit être enregistré');
+        $this->assertEquals('497010XXXXXXXX40', $this->order->get_meta('Card number'), 'Le numéro de carte doit être enregistré');
+        $this->assertEquals('CB', $this->order->get_meta('Payment mean'), 'Le moyen de paiement doit être enregistré');
     }
 
     // =========================================
@@ -171,7 +171,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
 
         // Statut ne doit pas changer pour paiement en cours
         // (pas de update_status appelé, juste add_order_note)
-        $this->assertEquals($initialStatus, $this->order->get_status());
+        $this->assertEquals($initialStatus, $this->order->get_status(), 'Le statut ne doit pas changer pour un paiement en cours (code 02306)');
     }
 
     /**
@@ -194,7 +194,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $initialStatus = $this->order->get_status();
         $method->invoke($this->gateway, $this->order, $response);
 
-        $this->assertEquals($initialStatus, $this->order->get_status());
+        $this->assertEquals($initialStatus, $this->order->get_status(), 'Le statut ne doit pas changer pour un paiement en cours (code 02533)');
     }
 
     // =========================================
@@ -221,7 +221,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order, $response);
 
         // Statut doit être "failed" pour refused
-        $this->assertEquals('failed', $this->order->get_status());
+        $this->assertEquals('failed', $this->order->get_status(), 'Le statut doit être "failed" pour un paiement refusé');
     }
 
     /**
@@ -244,7 +244,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order, $response);
 
         // Statut doit être "cancelled" pour cancelled
-        $this->assertEquals('cancelled', $this->order->get_status());
+        $this->assertEquals('cancelled', $this->order->get_status(), 'Le statut doit être "cancelled" pour un paiement annulé');
     }
 
     /**
@@ -267,7 +267,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order, $response);
 
         // Statut doit être "failed" pour error
-        $this->assertEquals('failed', $this->order->get_status());
+        $this->assertEquals('failed', $this->order->get_status(), 'Le statut doit être "failed" pour une erreur technique');
     }
 
     // =========================================
@@ -300,7 +300,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order, $response);
 
         // Vérifier que payment_method est défini
-        $this->assertEquals('payline_cpt', $this->order->get_payment_method());
+        $this->assertEquals('payline_cpt', $this->order->get_payment_method(), 'Le payment_method doit être "payline_cpt"');
     }
 
     /**
@@ -322,7 +322,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $message = $method->invoke($this->gateway, $this->order, $response);
 
         // Doit retourner le message d'erreur configuré
-        $this->assertEquals('Paiement refusé', $message);
+        $this->assertEquals('Paiement refusé', $message, 'Le message doit être celui configuré pour les paiements refusés');
     }
 
     /**
@@ -351,6 +351,32 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $message = $method->invoke($this->gateway, $this->order, $response);
 
         // Doit retourner une chaîne vide pour succès
-        $this->assertEmpty($message);
+        $this->assertEmpty($message, 'Le message doit être vide pour un paiement réussi');
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function test_payline_manage_return_handles_missing_contract_number()
+    {
+        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'paylineManageReturn');
+
+        $response = array(
+            'result' => array(
+                'code' => '00000',
+                'shortMessage' => 'ACCEPTED',
+            ),
+            'transaction' => array('id' => 'TXN_NO_CONTRACT'),
+            'card' => array(
+                'number' => '497010XXXXXXXX40',
+                'type' => 'CB',
+                'expirationDate' => '1225',
+            ),
+            'payment' => array('contractNumber' => 'CB-123456'),
+        );
+
+        $method->invoke($this->gateway, $this->order, $response);
+
+        $this->assertEquals('completed', $this->order->get_status(), 'Le statut doit être "completed" même sans contractNumber');
     }
 }

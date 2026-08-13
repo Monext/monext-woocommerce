@@ -22,6 +22,8 @@ class WC_Gateway_Payline extends WC_Abstract_Payline {
 
     protected $debugEnable;
 
+    public $availability;
+
     /**
      * Create instance of payment method
      */

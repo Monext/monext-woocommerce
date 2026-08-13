@@ -11,7 +11,7 @@
  */
 
 if (!function_exists('get_option')) {
-    function get_option($key, $default = []) {
+    function get_option($key, $default = false) {
         return MockOptions::$data[$key] ?? $default;
     }
 }
@@ -19,6 +19,13 @@ if (!function_exists('get_option')) {
 if (!function_exists('update_option')) {
     function update_option($option, $value, $autoload = null) {
         MockOptions::$data[$option] = $value;
+        return true;
+    }
+}
+
+if (!function_exists('delete_option')) {
+    function delete_option($option) {
+        unset(MockOptions::$data[$option]);
         return true;
     }
 }
@@ -44,5 +51,32 @@ if (!function_exists('is_user_logged_in')) {
 if (!function_exists('get_current_user_id')) {
     function get_current_user_id() {
         return 1; // Mock user ID
+    }
+}
+
+if (!function_exists('current_datetime')) {
+    function current_datetime($timezone = 'server') {
+        return new DateTime('now');
+    }
+}
+
+if (!function_exists('wp_send_json_success')) {
+    function wp_send_json_success($response = null) {
+        MockWordPress::$data['wp_send_json_success'] = $response;
+        die();
+    }
+}
+
+if (!function_exists('wp_send_json_error')) {
+    function wp_send_json_error($response = null) {
+        MockWordPress::$data['wp_send_json_error'] = $response;
+        die();
+    }
+}
+
+if (!function_exists('wp_die')) {
+    function wp_die($message = '') {
+        MockWordPress::$data['wp_die_called'] = true;
+        die();
     }
 }

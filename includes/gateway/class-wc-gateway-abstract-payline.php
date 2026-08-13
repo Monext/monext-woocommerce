@@ -803,7 +803,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         $doWebPaymentRequest['buyer']['email'] = $this->cleanSubstr($billingEmail, 0, 150);
         $doWebPaymentRequest['buyer']['ip'] = $_SERVER['REMOTE_ADDR'];
         $doWebPaymentRequest['buyer']['mobilePhone'] = $this->cleanSubstr(preg_replace("/[^0-9.]/", '', $order->get_billing_phone()), 0, 15);
-        if($this->settings['wallet'] == 'yes' && is_user_logged_in() && $order->get_user_id() > 0){
+        if(!empty($this->settings['wallet']) && $this->settings['wallet'] == 'yes' && is_user_logged_in() && $order->get_user_id() > 0){
 	        $doWebPaymentRequest['buyer']['walletId'] = $this->encryptWalletId($order->get_user_id());
         }
 

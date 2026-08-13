@@ -115,11 +115,10 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertTrue($result);
-        $this->assertCount(1, $this->order->get_order_notes());
-        // Vérifier que la note contient l'ID de capture
+        $this->assertTrue($result, 'captureOrder() doit retourner true en cas de succès');
+        $this->assertCount(1, $this->order->get_order_notes(), 'Une note doit être ajoutée après une capture réussie');
         $note = $this->order->get_order_notes()[0]['content'];
-        $this->assertTrue(strpos($note, 'CAP_XYZ789') !== false);
+        $this->assertTrue(strpos($note, 'CAP_XYZ789') !== false, 'La note doit contenir l\'ID de capture');
     }
 
     /**
@@ -166,9 +165,8 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order);
 
         // Pas de valeur de retour explicite dans le code (return vide)
-        $this->assertNull($result);
-        // Pas de note ajoutée
-        $this->assertCount(0, $this->order->get_order_notes());
+        $this->assertNull($result, 'captureOrder() doit retourner null quand une capture existe déjà');
+        $this->assertCount(0, $this->order->get_order_notes(), 'Aucune note ne doit être ajoutée quand une capture existe déjà');
     }
 
     // -------------------------------
@@ -215,12 +213,11 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertFalse($result);
-        $this->assertCount(1, $this->order->get_order_notes());
-        // Vérifier que la note contient le message d'erreur (PHP 7.4 compatible)
+        $this->assertFalse($result, 'captureOrder() doit retourner false en cas d\'erreur API');
+        $this->assertCount(1, $this->order->get_order_notes(), 'Une note d\'erreur doit être ajoutée');
         $note = $this->order->get_order_notes()[0]['content'];
-        $this->assertTrue(strpos($note, 'Capture error') !== false);
-        $this->assertTrue(strpos($note, 'Insufficient funds') !== false);
+        $this->assertTrue(strpos($note, 'Capture error') !== false, 'La note doit mentionner "Capture error"');
+        $this->assertTrue(strpos($note, 'Insufficient funds') !== false, 'La note doit contenir le message d\'erreur de l\'API');
     }
 
     /**
@@ -262,7 +259,7 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'captureOrder() doit retourner true avec un montant converti en centimes');
     }
 
     /**
@@ -299,7 +296,7 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'captureOrder() doit retourner true avec l\'action 201');
     }
 
     /**
@@ -336,6 +333,6 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'captureOrder() doit retourner true avec la devise EUR (978)');
     }
 }

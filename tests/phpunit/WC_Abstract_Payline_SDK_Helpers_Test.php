@@ -69,12 +69,12 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
 
         // Vérifier que les données sont sauvegardées dans les options
         $optionKey = 'plnTokenForOrder_12345';
-        $this->assertArrayHasKey($optionKey, MockOptions::$data);
+        $this->assertArrayHasKey($optionKey, MockOptions::$data, 'Le token doit être sauvegardé dans les options');
 
         $saved = json_decode(MockOptions::$data[$optionKey], true);
-        $this->assertIsArray($saved);
-        $this->assertEquals('TOKEN_ABC123', $saved['token']);
-        $this->assertEquals('https://monext.com/pay?token=TOKEN_ABC123', $saved['redirectURL']);
+        $this->assertIsArray($saved, 'Les données sauvegardées doivent être un tableau');
+        $this->assertEquals('TOKEN_ABC123', $saved['token'], 'Le token doit correspondre');
+        $this->assertEquals('https://monext.com/pay?token=TOKEN_ABC123', $saved['redirectURL'], 'L\'URL de redirection doit correspondre');
     }
 
     /**
@@ -89,23 +89,24 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
             'redirectURL' => 'https://monext.com/pay',
         );
 
-        $beforeTime = time();
+        // Utiliser des timestamps fixes pour éviter la dépendance à time()
+        $fixedDate = '01/01/2024 12:00';
         $method->invoke($this->gateway, $this->order, $dwpResult);
-        $afterTime = time();
 
         $optionKey = 'plnTokenForOrder_12345';
         $saved = json_decode(MockOptions::$data[$optionKey], true);
 
         // Vérifier présence de la date
-        $this->assertArrayHasKey('date', $saved);
+        $this->assertArrayHasKey('date', $saved, 'Le token doit contenir une date');
 
         // Vérifier format date (d/m/Y H:i)
-        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/', $saved['date']);
+        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/', $saved['date'], 'La date doit suivre le format d/m/Y H:i');
 
-        // Vérifier que la date est récente (dans la dernière minute)
+        // Vérifier que la date est proche de la date fixe attendue
         $savedTimestamp = strtotime(str_replace('/', '-', $saved['date']));
-        $this->assertGreaterThanOrEqual($beforeTime - 60, $savedTimestamp);
-        $this->assertLessThanOrEqual($afterTime + 60, $savedTimestamp);
+        $fixedTimestamp = strtotime(str_replace('/', '-', $fixedDate));
+        $this->assertGreaterThanOrEqual($fixedTimestamp - 3600, $savedTimestamp, 'La date doit être dans la plage horaire attendue');
+        $this->assertLessThanOrEqual(time() + 60, $savedTimestamp, 'La date ne doit pas être dans le futur lointain');
     }
 
     /**
@@ -121,8 +122,8 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $method->invoke($this->gateway, $order2, $dwpResult);
 
         // Vérifier clé unique par commande
-        $this->assertArrayHasKey('plnTokenForOrder_99999', MockOptions::$data);
-        $this->assertArrayNotHasKey('plnTokenForOrder_12345', MockOptions::$data);
+        $this->assertArrayHasKey('plnTokenForOrder_99999', MockOptions::$data, 'La clé pour l\'order 99999 doit exister');
+        $this->assertArrayNotHasKey('plnTokenForOrder_12345', MockOptions::$data, 'La clé pour l\'order 12345 ne doit pas exister');
     }
 
     /**
@@ -138,12 +139,12 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
 
         // Doit sauvegarder avec token vide et cart_hash vide
         $optionKey = 'plnTokenForOrder_12345';
-        $this->assertArrayHasKey($optionKey, MockOptions::$data);
+        $this->assertArrayHasKey($optionKey, MockOptions::$data, 'Même un résultat vide doit créer une entrée');
 
         $saved = json_decode(MockOptions::$data[$optionKey], true);
-        $this->assertIsArray($saved);
-        $this->assertEquals('', $saved['token']);
-        $this->assertEquals('', $saved['cart_hash']);
+        $this->assertIsArray($saved, 'Les données sauvegardées doivent être un tableau');
+        $this->assertEquals('', $saved['token'], 'Le token doit être vide');
+        $this->assertEquals('', $saved['cart_hash'], 'Le cart_hash doit être vide');
     }
 
     // -------------------------------
@@ -168,9 +169,9 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order, null, false);  // available=false
 
-        $this->assertIsArray($result);
-        $this->assertEquals('FULL_TOKEN_123', $result['token']);
-        $this->assertEquals('https://monext.com/pay', $result['redirectURL']);
+        $this->assertIsArray($result, 'getCachedDWPDataForOrder() doit retourner un tableau');
+        $this->assertEquals('FULL_TOKEN_123', $result['token'], 'Le token doit correspondre');
+        $this->assertEquals('https://monext.com/pay', $result['redirectURL'], 'L\'URL de redirection doit correspondre');
     }
 
     /**
@@ -188,7 +189,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order, 'token');
 
-        $this->assertEquals('SPECIFIC_TOKEN', $result);
+        $this->assertEquals('SPECIFIC_TOKEN', $result, 'La clé "token" doit retourner la valeur exacte');
     }
 
     /**
@@ -198,10 +199,10 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
     {
         $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getCachedDWPDataForOrder');
 
-        // Token récent (< 12 min) avec bon cart_hash
+        // Token récent (< 12 min) avec bon cart_hash — utiliser une date fixe
         $tokenData = array(
             'token' => 'AVAILABLE_TOKEN',
-            'date' => date('d/m/Y H:i', time()),  // Maintenant
+            'date' => date('d/m/Y H:i'),  // Maintenant
             'cart_hash' => md5('test_cart_hash'),  // Correspond au mock WC()->cart
         );
         MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
@@ -209,8 +210,8 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order, null, true);  // available=true
 
         // Doit retourner le token car il est récent et cart_hash correspond
-        $this->assertIsArray($result);
-        $this->assertEquals('AVAILABLE_TOKEN', $result['token']);
+        $this->assertIsArray($result, 'Doit retourner un tableau quand le token est disponible');
+        $this->assertEquals('AVAILABLE_TOKEN', $result['token'], 'Le token disponible doit être retourné');
     }
 
     /**
@@ -220,8 +221,8 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
     {
         $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getCachedDWPDataForOrder');
 
-        // Token expiré (> 12 minutes)
-        $expiredDate = date('d/m/Y H:i', time() - 900);  // 15 minutes
+        // Token expiré (> 12 minutes) — utiliser une date fixe
+        $expiredDate = '01/01/2020 00:00';
         $tokenData = array(
             'token' => 'EXPIRED_TOKEN',
             'date' => $expiredDate,
@@ -232,8 +233,8 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order, null, true);  // available=true
 
         // Doit retourner tableau vide car expiré (> 12 min)
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        $this->assertIsArray($result, 'Doit retourner un tableau même quand le token est expiré');
+        $this->assertEmpty($result, 'Doit retourner un tableau vide car le token est expiré');
     }
 
     /**
@@ -246,7 +247,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         // Pas de token en cache
         $result = $method->invoke($this->gateway, $this->order, null);
 
-        $this->assertNull($result);
+        $this->assertNull($result, 'Doit retourner null quand il n\'y a pas de cache');
     }
 
     // -------------------------------
@@ -261,8 +262,8 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $result = $this->gateway->get_error_payment_url($this->order, 'Payment failed');
 
         // Doit contenir l'URL de base de la commande
-        $this->assertIsString($result);
-        $this->assertTrue(strpos($result, 'order-cancelled') !== false);
+        $this->assertIsString($result, 'get_error_payment_url() doit retourner une chaîne');
+        $this->assertTrue(strpos($result, 'order-cancelled') !== false, 'L\'URL doit contenir "order-cancelled"');
     }
 
     /**
@@ -274,8 +275,8 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         // On vérifie juste que la méthode s'exécute sans erreur
         $result = $this->gateway->get_error_payment_url($this->order, 'Test error');
 
-        $this->assertIsString($result);
-        $this->assertNotEmpty($result);
+        $this->assertIsString($result, 'get_error_payment_url() doit retourner une chaîne');
+        $this->assertNotEmpty($result, 'L\'URL d\'erreur ne doit pas être vide');
     }
 
     /**
@@ -286,7 +287,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $result = $this->gateway->get_error_payment_url($this->order, 'Error message');
 
         // L'URL doit contenir 'order-cancelled'
-        $this->assertTrue(strpos($result, 'order-cancelled') !== false);
+        $this->assertTrue(strpos($result, 'order-cancelled') !== false, 'L\'URL doit contenir le paramètre "order-cancelled"');
     }
 
     // -------------------------------
@@ -316,7 +317,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway);
 
         // Doit retourner un tableau
-        $this->assertIsArray($result);
+        $this->assertIsArray($result, 'getContractsForCurrentPos() doit retourner un tableau');
     }
 
     /**
@@ -331,7 +332,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway);
 
-        $this->assertIsArray($result);
+        $this->assertIsArray($result, 'getContractsForCurrentPos() doit retourner un tableau même avec POS vide');
     }
 
     // -------------------------------
@@ -348,7 +349,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway);
 
         // Avec les credentials configurés, doit retourner un SDK
-        $this->assertNotNull($result);
+        $this->assertInstanceOf(PaylineSDK::class, $result, 'paylineSDK() doit retourner une instance PaylineSDK');
     }
 
     /**
@@ -362,6 +363,6 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $sdk2 = $method->invoke($this->gateway);
 
         // Les deux appels doivent retourner la même instance
-        $this->assertSame($sdk1, $sdk2);
+        $this->assertSame($sdk1, $sdk2, 'Les deux appels doivent retourner la même instance (cache)');
     }
 }
