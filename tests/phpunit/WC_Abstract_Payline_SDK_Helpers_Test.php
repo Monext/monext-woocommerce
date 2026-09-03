@@ -75,6 +75,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $this->assertIsArray($saved, 'Les données sauvegardées doivent être un tableau');
         $this->assertEquals('TOKEN_ABC123', $saved['token'], 'Le token doit correspondre');
         $this->assertEquals('https://monext.com/pay?token=TOKEN_ABC123', $saved['redirectURL'], 'L\'URL de redirection doit correspondre');
+        $this->assertEquals('CPT', $saved['payment_mode']);
     }
 
     /**
@@ -145,6 +146,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         $this->assertIsArray($saved, 'Les données sauvegardées doivent être un tableau');
         $this->assertEquals('', $saved['token'], 'Le token doit être vide');
         $this->assertEquals('', $saved['cart_hash'], 'Le cart_hash doit être vide');
+        $this->assertArrayNotHasKey('payment_mode', $saved);
     }
 
     // -------------------------------
@@ -164,6 +166,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
             'redirectURL' => 'https://monext.com/pay',
             'date' => date('d/m/Y H:i'),
             'cart_hash' => md5('test_cart_hash'),  // Doit correspondre au mock WC()->cart
+            'payment_mode' => 'CPT',
         );
         MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
 
@@ -204,6 +207,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
             'token' => 'AVAILABLE_TOKEN',
             'date' => date('d/m/Y H:i'),  // Maintenant
             'cart_hash' => md5('test_cart_hash'),  // Correspond au mock WC()->cart
+            'payment_mode' => 'CPT',
         );
         MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
 
@@ -227,6 +231,7 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
             'token' => 'EXPIRED_TOKEN',
             'date' => $expiredDate,
             'cart_hash' => md5('test_cart_hash'),
+            'payment_mode' => 'CPT',
         );
         MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
 
@@ -235,6 +240,71 @@ class WC_Abstract_Payline_SDK_Helpers_Test extends PaylineTestCase
         // Doit retourner tableau vide car expiré (> 12 min)
         $this->assertIsArray($result, 'Doit retourner un tableau même quand le token est expiré');
         $this->assertEmpty($result, 'Doit retourner un tableau vide car le token est expiré');
+    }
+
+    /**
+     * Test : getCachedDWPDataForOrder() retourne tableau vide si payment_mode ne correspond pas
+     */
+    public function test_get_cached_dwp_data_returns_empty_when_payment_mode_mismatches()
+    {
+        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getCachedDWPDataForOrder');
+
+        // Token avec payment_mode='NX', mais gateway est CPT
+        $tokenData = array(
+            'token' => 'NX_TOKEN',
+            'date' => date('d/m/Y H:i'),
+            'cart_hash' => md5('test_cart_hash'),
+            'payment_mode' => 'NX',
+        );
+        MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
+
+        $result = $method->invoke($this->gateway, $this->order, null, true);
+
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * Test : getCachedDWPDataForOrder() retourne tableau vide si payment_mode manquant (legacy)
+     */
+    public function test_get_cached_dwp_data_returns_empty_when_payment_mode_missing()
+    {
+        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getCachedDWPDataForOrder');
+
+        // Token sans payment_mode (données legacy)
+        $tokenData = array(
+            'token' => 'LEGACY_TOKEN',
+            'date' => date('d/m/Y H:i'),
+            'cart_hash' => md5('test_cart_hash'),
+        );
+        MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
+
+        $result = $method->invoke($this->gateway, $this->order, null, true);
+
+        $this->assertIsArray($result);
+        $this->assertEmpty($result);
+    }
+
+    /**
+     * Test : getCachedDWPDataForOrder() retourne token quand payment_mode correspond
+     */
+    public function test_get_cached_dwp_data_returns_token_when_payment_mode_matches()
+    {
+        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getCachedDWPDataForOrder');
+
+        // Token avec payment_mode='CPT', gateway est CPT
+        $tokenData = array(
+            'token' => 'MATCH_TOKEN',
+            'date' => date('d/m/Y H:i'),
+            'cart_hash' => md5('test_cart_hash'),
+            'payment_mode' => 'CPT',
+        );
+        MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
+
+        $result = $method->invoke($this->gateway, $this->order, null, true);
+
+        $this->assertIsArray($result);
+        $this->assertEquals('MATCH_TOKEN', $result['token']);
     }
 
     /**

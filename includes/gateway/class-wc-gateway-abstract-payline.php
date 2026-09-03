@@ -677,6 +677,9 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             if (!isset($tokenDecoded['cart_hash']) || ($available && WC()->cart->get_cart_hash() !== $tokenDecoded['cart_hash'])){
                 $tokenDecoded = [];
             }
+            if (!isset($tokenDecoded['payment_mode']) || ($available && $this->paymentMode !== $tokenDecoded['payment_mode'])){
+                $tokenDecoded = [];
+            }
         }
 
         if($key) {
@@ -734,6 +737,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         if(!empty( $dwpResult['token'])) {
             $dwpResult['date'] = date(self::PAYLINE_DATE_FORMAT);
             $dwpResult['cart_hash'] = WC()->cart->get_cart_hash();
+            $dwpResult['payment_mode'] = $this->paymentMode;
         } else {
             $dwpResult['token'] = '';
             $dwpResult['cart_hash'] = '';
