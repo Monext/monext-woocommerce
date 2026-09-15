@@ -663,9 +663,12 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
      * @param $available
      * @return array|mixed|string|null
      */
-    protected function getCachedDWPDataForOrder(WC_Order $order, $key= null, $available = false) {
+    protected function getCachedDWPDataForOrder(WC_Order $order, $key= null, $available = false, $refreshData = true) {
         $tokenDecoded = $this->getArrayTokenForOrder($order);
-        (new OrderController())->update_order_from_cart($order);
+
+        if($refreshData) {
+            (new OrderController())->update_order_from_cart($order);
+        }
 
         $token = $tokenDecoded['token'] ?? null;
         if($token && !empty($tokenDecoded['date'])) {
@@ -1114,143 +1117,6 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
     }
 
     /**
-     * Todo: TO DELETE
-     * @param int $order_id
-     */
-    function generate_payline_form($order_id) {
-    $ctaButton = $this->getConfigValueIfExists('widget_settings_cta_label');
-    $textUnderCta = $this->getConfigValueIfExists('widget_settings_text_under_cta');
-    $widgetCustomCss = $this->generateWidgetCustomCss();
-
-    if (!empty($widgetCustomCss)) {
-        echo '<style type="text/css">' . $widgetCustomCss . '</style>';
-    }
-
-        echo '<script type="text/javascript">
-
-const ctaLabel = "' . (!empty($ctaButton) ? strip_tags($ctaButton) : '') . '";
-const textUnderCta = "' . (!empty($textUnderCta) ? strip_tags($textUnderCta) : '') . '";
-
-window.eventDidshowstate = function (e) {
-    if ( e.state && e.state === "PAYMENT_METHODS_LIST" ) {
-        if (ctaLabel != "") {
-            jQuery(".PaylineWidget .pl-pay-btn, .PaylineWidget .pl-btn").html(ctaLabel.replace("{{amount}}", Payline.Api.getContextInfo("PaylineFormattedAmount")));
-        }
-
-        if (textUnderCta) {
-            jQuery(".PaylineWidget .pl-pay-btn, .PaylineWidget .pl-btn").after(jQuery("<p>").html(textUnderCta).addClass("pl-text-under-cta"))
-        }
-    }
-}
-hideReceivedContext = function() {
-    jQuery(".storefront-breadcrumb").hide();
-    jQuery(".order_details").hide();
-    jQuery("h1.entry-title").html("'. __('Payment', 'payline') .'")
-    jQuery("#site-header-cart").hide();
-};
-
-eventFinalstatehasbeenreached= function (e) {
-    if ( e.state === "PAYMENT_SUCCESS" ) {
-        //--> Redirect to success page
-        //--> Ticket is hidden by CSS
-        //--> Wait for DOM update to simulate a click on the ticket confirmation button
-        window.setTimeout(() => {
-            const ticketConfirmationButton = document.getElementById("pl-ticket-default-ticket_btn");
-            if ( ticketConfirmationButton ) {
-                ticketConfirmationButton.click();
-            }
-        }, 0);
-    }
-};
-
-cancelPaylinePayment = function ()
-{
-    Payline . Api . endToken(); // end the token s life
-    window . location . href = Payline . Api . getCancelAndReturnUrls() . cancelUrl; // redirect the user to cancelUrl
-}
-            </script>';
-
-        $order = wc_get_order($order_id);
-
-
-        $requestParams = $this->getWebPaymentRequest($order);
-
-        $this->debug($requestParams, array(__METHOD__));
-
-        $token = $this->getCachedDWPDataForOrder($order, 'token', true);
-
-        if ( preg_match('/inshop-(.*)/', $this->settings['widget_integration'],$match) ) {
-            $widgetJS  =  PaylineSDK::PROD_WDGT_JS;
-            $widgetCSS  =  PaylineSDK::PROD_WDGT_CSS;
-            if ($this->settings['environment'] ==PaylineSDK::ENV_HOMO) {
-                $widgetJS  =  PaylineSDK::HOMO_WDGT_JS;
-                $widgetCSS  =  PaylineSDK::HOMO_WDGT_CSS;
-            }
-            printf( '<script src="%s"></script>', $widgetJS);
-            printf('<link href="%s" rel="stylesheet" />', $widgetCSS);
-
-
-            // Prevent to send the request again on refresh.
-            if ( !empty( $_GET['paylinetoken'] ) ) {
-                $token = $_GET['paylinetoken'];
-            } elseif ( !$token ) {
-                $result = $this->paylineSDK()->doWebPayment( $requestParams );
-                $this->debug($result, array(__METHOD__));
-                do_action( 'payline_after_do_web_payment', $result, $this );
-
-                if ( $result['result']['code'] === '00000' ) {
-                    $this->updateTokenForOrder($order, $result);
-                    $token = $result['token'];
-                } else {
-                    echo '<div class="PaylineWidget"><p class="pl-message pl-message-error">' . sprintf( __( 'An error occured while displaying the payment form (error code %s : %s). Please contact us.', 'payline' ), $result['result']['code'], $result['result']['longMessage'] ) . '</p></div>';
-                    exit;
-                }
-            }
-
-            printf(
-                '<div id="PaylineWidget" data-token="%s" data-template="%s" data-embeddedredirectionallowed="true" data-event-didshowstate="eventDidshowstate" data-event-finalstatehasbeenreached="eventFinalstatehasbeenreached"></div>',
-                $token,
-                $match[1]
-            );
-
-            echo '<script type="text/javascript">
-            jQuery(document).ready(function($){
-                hideReceivedContext();
-            });
-            </script>
-            <p></p><button onclick="javascript:cancelPaylinePayment()">' .
-                __('Cancel payment', 'payline') .
-                '</button></p>';
-
-            exit;
-        } else {
-            // EXECUTE
-            $result = $this->paylineSDK()->doWebPayment( $requestParams );
-
-            $this->debug($result, array(__METHOD__));
-
-            // Add payline_after_do_web_payment for widget
-            do_action( 'payline_after_do_web_payment', $result, $this );
-
-            if ( $result['result']['code'] === '00000' ) {
-                // save association between order and payment session token so that the callback can check that the response is valid.
-                //update_option( $tokenOptionKey, $result['token'] );
-                $this->updateTokenForOrder($order, $result);
-
-
-                header( 'Location: ' . $result['redirectURL'] );
-
-                exit;
-            } else {
-                $message = sprintf( __( 'You can\'t be redirected to payment page (error code %s : %s). Please contact us.', 'payline' ), $result['result']['code'],  $result['result']['longMessage']);
-                wp_redirect($this->get_error_payment_url($order, $message));
-                die();
-            }
-        }
-    }
-
-
-    /**
      * @return void
      */
     protected function payline_callback_cancel($message='') {
@@ -1392,7 +1258,7 @@ cancelPaylinePayment = function ()
 	            }
             }
 
-            $expectedToken = $this->getCachedDWPDataForOrder($order, 'token');
+            $expectedToken = $this->getCachedDWPDataForOrder($order, 'token',false,false);
             if($expectedToken != $token){
                 $message = sprintf(__('Token %s does not match expected %s for order %s', 'payline'), wc_clean($token), $expectedToken, $orderId);
                 $this->paylineSDK()->getLogger()->error($message);
