@@ -3,7 +3,7 @@
  * Plugin Name: Monext
  * Plugin URI: https://docs.payline.com/display/DT/Plugin+WooCommerce
  * Description: integrations of Monext payment solution in your WooCommerce store
- * Version: 1.5.11
+ * Version: 1.5.12
  * Author: Monext
  * Text Domain: monext-online-woocommerce
  * Author URI: https://www.monext.fr
@@ -40,7 +40,7 @@ if (!defined('ABSPATH')) exit;
 define('WCPAYLINE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WCPAYLINE_PLUGIN_CLASS', plugin_basename(__FILE__));
-define('WCPAYLINE_PLUGIN_VERSION', '1.5.11');
+define('WCPAYLINE_PLUGIN_VERSION', '1.5.12');
 
 if (is_admin()) {
     if (!class_exists('WC_Payline_Update_Checker')) {
