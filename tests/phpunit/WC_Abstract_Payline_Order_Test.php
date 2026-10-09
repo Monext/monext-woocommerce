@@ -48,7 +48,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('plnTokenForOrder_12345', $result);
+        $this->assertEquals('plnTokenForOrder_12345', $result, 'La clé doit contenir l\'ID de la commande');
     }
 
     /**
@@ -61,7 +61,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $order);
 
-        $this->assertEquals('plnTokenForOrder_99999', $result);
+        $this->assertEquals('plnTokenForOrder_99999', $result, 'La clé doit contenir l\'ID 99999');
     }
 
     /**
@@ -75,7 +75,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $order);
 
         // L'ID 0 génère un ID aléatoire dans le mock, donc on vérifie juste le format
-        $this->assertStringStartsWith('plnTokenForOrder_', $result);
+        $this->assertStringStartsWith('plnTokenForOrder_', $result, 'La clé doit commencer par le préfixe attendu');
     }
 
     // =========================================
@@ -136,7 +136,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('completed', $this->order->get_status());
+        $this->assertEquals('completed', $this->order->get_status(), 'Le statut doit passer à "completed"');
     }
 
     /**
@@ -149,7 +149,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('completed', $this->order->get_status());
+        $this->assertEquals('completed', $this->order->get_status(), 'Le statut doit passer de "pending" à "completed"');
     }
 
     /**
@@ -162,7 +162,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('completed', $this->order->get_status());
+        $this->assertEquals('completed', $this->order->get_status(), 'Le statut doit passer de "processing" à "completed"');
     }
 
     // =========================================
@@ -178,7 +178,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('on-hold', $this->order->get_status());
+        $this->assertEquals('on-hold', $this->order->get_status(), 'Le statut doit passer à "on-hold"');
     }
 
     /**
@@ -191,7 +191,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('on-hold', $this->order->get_status());
+        $this->assertEquals('on-hold', $this->order->get_status(), 'Le statut doit passer de "pending" à "on-hold"');
     }
 
     // =========================================
@@ -208,7 +208,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order);
 
         // getArrayTokenForOrder() retourne null (pas array vide) quand pas de token
-        $this->assertNull($result);
+        $this->assertNull($result, 'Doit retourner null quand aucun token n\'est stocké');
     }
 
     /**
@@ -219,7 +219,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
         // Stocker un token dans les options (avec la bonne clé)
         $tokenData = array(
             'token' => 'ABC123TOKEN',
-            'expires' => time() + 3600,
+            'expires' => 1704067200 + 3600,
             'cart_hash' => 'hash123',
         );
         MockOptions::$data['plnTokenForOrder_12345'] = json_encode($tokenData);
@@ -228,11 +228,11 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertIsArray($result);
-        $this->assertArrayHasKey('token', $result);
-        $this->assertEquals('ABC123TOKEN', $result['token']);
-        $this->assertArrayHasKey('expires', $result);
-        $this->assertArrayHasKey('cart_hash', $result);
+        $this->assertIsArray($result, 'Doit retourner un tableau');
+        $this->assertArrayHasKey('token', $result, 'Le tableau doit contenir la clé "token"');
+        $this->assertEquals('ABC123TOKEN', $result['token'], 'Le token doit correspondre');
+        $this->assertArrayHasKey('expires', $result, 'Le tableau doit contenir la clé "expires"');
+        $this->assertArrayHasKey('cart_hash', $result, 'Le tableau doit contenir la clé "cart_hash"');
     }
 
     /**
@@ -248,7 +248,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order);
 
         // Retourne null quand JSON invalide
-        $this->assertNull($result);
+        $this->assertNull($result, 'Doit retourner null quand le JSON est invalide');
     }
 
     /**
@@ -264,7 +264,7 @@ class WC_Abstract_Payline_Order_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order);
 
         // Retourne null quand décodé n'est pas un array
-        $this->assertNull($result);
+        $this->assertNull($result, 'Doit retourner null quand le JSON décodé n\'est pas un tableau');
     }
 
     /**

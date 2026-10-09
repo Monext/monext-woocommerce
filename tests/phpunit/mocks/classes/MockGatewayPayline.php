@@ -29,4 +29,9 @@ class MockGatewayPayline {
     {
         return self::$fixtures;
     }
+
+    public function createManageWebWallet()
+    {
+        return self::$data['createManageWebWallet_result'];
+    }
 }

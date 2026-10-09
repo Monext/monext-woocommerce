@@ -65,6 +65,7 @@ require_once __DIR__ . '/mocks/classes/MockOptions.php';
 require_once __DIR__ . '/mocks/classes/MockPlugins.php';
 require_once __DIR__ . '/mocks/classes/MockWordPress.php';
 require_once __DIR__ . '/mocks/classes/MockGatewayPayline.php';
+require_once __DIR__ . '/mocks/classes/MockWcBlocks.php';
 
 // Initialiser les fixtures par défaut
 MockOptions::reset();
@@ -92,6 +93,8 @@ require_once __DIR__ . '/mocks/woocommerce/WC_Enums.php';
 require_once __DIR__ . '/mocks/woocommerce/WP_Error.php';
 require_once __DIR__ . '/mocks/woocommerce/WC_Payment_Gateway.php';
 require_once __DIR__ . '/mocks/woocommerce/WC_Order.php';
+require_once __DIR__ . '/mocks/woocommerce/WC_Customer.php';
+require_once __DIR__ . '/mocks/woocommerce/OrderController.php';
 require_once __DIR__ . '/mocks/woocommerce/wc-functions.php';
 
 // ========================================================================
@@ -108,6 +111,14 @@ if (!defined('WCPAYLINE_PLUGIN_URL')) {
 
 if (!defined('WCPAYLINE_PLUGIN_PATH')) {
     define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
+}
+
+if (!defined('WC_VERSION')) {
+    define('WC_VERSION', '9.0.0');
+}
+
+if (!defined('WP_CONTENT_DIR')) {
+    define('WP_CONTENT_DIR', '/tmp/wp-content');
 }
 
 // Mock $_SERVER pour les tests
@@ -129,3 +140,17 @@ require_once __DIR__ . '/../../includes/front/payline-wallet.php';
 // Charge les classes gateway (APRÈS WC_Payment_Gateway mock)
 require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-abstract-payline.php';
 require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-payline-cpt.php';
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-abstract-recurring-payline.php';
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-payline-nx.php';
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-payline-rec.php';
+require_once __DIR__ . '/../../includes/gateway/class-wc-gateway-payline.php';
+
+// Charge les classes admin et upgrades
+require_once __DIR__ . '/../../includes/admin/payline-logs-viewer.php';
+require_once __DIR__ . '/../../includes/class-wc-payline-upgrades.php';
+
+// Charge les classes Blocks WooCommerce
+require_once __DIR__ . '/../../includes/blocks/class-wc-blocs-abstract-payline.php';
+require_once __DIR__ . '/../../includes/blocks/class-wc-blocs-payline-cpt.php';
+require_once __DIR__ . '/../../includes/blocks/class-wc-blocs-payline-nx.php';
+require_once __DIR__ . '/../../includes/blocks/class-wc-blocs-payline-rec.php';

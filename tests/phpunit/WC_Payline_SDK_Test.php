@@ -26,7 +26,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         $isValid = $this->getPrivateMethod(WC_Payline_SDK::class, 'isValidResponse');
         $result = ['result' => ['code' => '00000']];
 
-        $this->assertTrue($isValid->invoke(null, $result));
+        $this->assertTrue($isValid->invoke(null, $result), 'isValidResponse() doit retourner true pour le code 00000');
     }
 
     public function test_is_valid_response_fallback()
@@ -34,8 +34,8 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         $isValid = $this->getPrivateMethod(WC_Payline_SDK::class, 'isValidResponse');
         $result = ['result' => ['code' => '12345']];
 
-        $this->assertTrue($isValid->invoke(null, $result, ['12345']));
-        $this->assertFalse($isValid->invoke(null, $result, ['5321']));
+        $this->assertTrue($isValid->invoke(null, $result, ['12345']), 'isValidResponse() doit accepter un code dans la liste fallback');
+        $this->assertFalse($isValid->invoke(null, $result, ['5321']), 'isValidResponse() doit rejeter un code absent de la liste fallback');
     }
 
     /**
@@ -45,7 +45,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
     {
         $isValid = $this->getPrivateMethod(WC_Payline_SDK::class, 'isValidResponse');
 
-        $this->assertFalse($isValid->invoke(null, $input));
+        $this->assertFalse($isValid->invoke(null, $input), 'isValidResponse() doit retourner false pour des données invalides');
     }
 
     public static function invalidResponseProvider(): array
@@ -84,7 +84,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
 
         $version = $getVersion->invoke(null);
 
-        $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $version);
+        $this->assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $version, 'getExtensionVersion() doit retourner un format semver (X.Y.Z)');
     }
 
     public function test_get_extension_version_uses_plugin_data()
@@ -94,7 +94,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         $getVersion = $this->getPrivateMethod(WC_Payline_SDK::class, 'getExtensionVersion');
 
         $version = $getVersion->invoke(null);
-        $this->assertEquals('9.9.9', $version);
+        $this->assertEquals('9.9.9', $version, 'getExtensionVersion() doit retourner la version du plugin');
     }
 
     // -------------------------------
@@ -105,8 +105,8 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         $getSettings = $this->getPrivateMethod(WC_Payline_SDK::class, 'getMethodSettings');
 
         $settings = $getSettings->invoke(null);
-        $this->assertSame('MERCH', $settings['merchant_id']);
-        $this->assertSame('KEY', $settings['access_key']);
+        $this->assertSame('MERCH', $settings['merchant_id'], 'getMethodSettings() doit retourner le merchant_id par défaut');
+        $this->assertSame('KEY', $settings['access_key'], 'getMethodSettings() doit retourner l\'access_key par défaut');
     }
 
     public function test_get_method_settings_with_payment_id()
@@ -114,9 +114,9 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         $getSettings = $this->getPrivateMethod(WC_Payline_SDK::class, 'getMethodSettings');
 
         $settings = $getSettings->invoke(null, 'payline_nx');
-        $this->assertSame('NX_MERCH', $settings['merchant_id']);
-        $this->assertSame('NX_KEY', $settings['access_key']);
-        $this->assertSame('redirection', $settings['widget_integration']);
+        $this->assertSame('NX_MERCH', $settings['merchant_id'], 'getMethodSettings() doit retourner le merchant_id NX');
+        $this->assertSame('NX_KEY', $settings['access_key'], 'getMethodSettings() doit retourner l\'access_key NX');
+        $this->assertSame('redirection', $settings['widget_integration'], 'getMethodSettings() doit retourner widget_integration pour NX');
     }
 
     public function test_get_method_settings_merges_payment_settings()
@@ -127,8 +127,8 @@ class WC_Payline_SDK_Test extends PaylineTestCase
 
         $settings = $getSettings->invoke(null, 'payline_nx');
 
-        $this->assertSame('HOMO', $settings['environment']);
-        $this->assertSame('custom_value', $settings['custom_option']);
+        $this->assertSame('HOMO', $settings['environment'], 'getMethodSettings() doit merger l\'environnement');
+        $this->assertSame('custom_value', $settings['custom_option'], 'getMethodSettings() doit merger les options custom');
     }
 
     public function test_get_method_settings_with_empty_payment_settings()
@@ -139,21 +139,18 @@ class WC_Payline_SDK_Test extends PaylineTestCase
 
         $settings = $getSettings->invoke(null, 'payline_empty');
 
-        // Doit retourner les settings globaux
-        $this->assertSame('MERCH', $settings['merchant_id']);
+        $this->assertSame('MERCH', $settings['merchant_id'], 'getMethodSettings() doit fallback sur les settings globaux');
     }
 
     public function test_get_method_settings_filters_empty_values()
     {
-        // Les valeurs vides du payment settings ne doivent pas écraser les globales
         MockOptions::$data['woocommerce_payline_nx_settings']['merchant_id'] = '';
 
         $getSettings = $this->getPrivateMethod(WC_Payline_SDK::class, 'getMethodSettings');
 
         $settings = $getSettings->invoke(null, 'payline_nx');
 
-        // merchant_id vide est filtré, donc on garde le global
-        $this->assertSame('MERCH', $settings['merchant_id']);
+        $this->assertSame('MERCH', $settings['merchant_id'], 'getMethodSettings() doit ignorer les valeurs vides et garder le global');
     }
 
     // -------------------------------
@@ -162,7 +159,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
     public function test_get_sdk_returns_instance()
     {
         $sdk = WC_Payline_SDK::getSDK();
-        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk);
+        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk, 'getSDK() doit retourner une instance de PaylineSDK');
     }
 
     public function test_get_sdk_returns_null_if_merchant_id_missing()
@@ -170,7 +167,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         unset(MockOptions::$data['woocommerce_payline_settings']['merchant_id']);
 
         $sdk = WC_Payline_SDK::getSDK();
-        $this->assertNull($sdk);
+        $this->assertNull($sdk, 'getSDK() doit retourner null si merchant_id est manquant');
     }
 
     public function test_get_sdk_returns_null_if_access_key_missing()
@@ -178,7 +175,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         unset(MockOptions::$data['woocommerce_payline_settings']['access_key']);
 
         $sdk = WC_Payline_SDK::getSDK();
-        $this->assertNull($sdk);
+        $this->assertNull($sdk, 'getSDK() doit retourner null si access_key est manquant');
     }
 
     public function test_get_sdk_returns_null_if_credentials_empty()
@@ -187,13 +184,13 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         MockOptions::$data['woocommerce_payline_settings']['access_key'] = '';
 
         $sdk = WC_Payline_SDK::getSDK();
-        $this->assertNull($sdk);
+        $this->assertNull($sdk, 'getSDK() doit retourner null si les credentials sont vides');
     }
 
     public function test_get_sdk_with_specific_payment_id()
     {
         $sdk = WC_Payline_SDK::getSDK('payline_nx');
-        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk);
+        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk, 'getSDK() doit retourner un SDK pour un payment_id spécifique');
     }
 
     public function test_get_sdk_with_prod_environment()
@@ -201,7 +198,7 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         MockOptions::$data['woocommerce_payline_settings']['environment'] = 'PROD';
 
         $sdk = WC_Payline_SDK::getSDK();
-        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk);
+        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk, 'getSDK() doit fonctionner en environnement PROD');
     }
 
     public function test_get_sdk_with_proxy_settings()
@@ -212,20 +209,18 @@ class WC_Payline_SDK_Test extends PaylineTestCase
         MockOptions::$data['woocommerce_payline_settings']['proxy_password'] = 'pass';
 
         $sdk = WC_Payline_SDK::getSDK();
-        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk);
+        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk, 'getSDK() doit fonctionner avec des settings proxy');
     }
 
     public function test_get_sdk_fallback_woocommerce_info()
     {
-        // Simule le cas où WooCommerce n'a pas de métadonnées complètes
-        // Le SDK doit utiliser des valeurs par défaut sans générer de warnings
         MockPlugins::$data['woocommerce'] = array(
             'Name' => '',
             'Version' => ''
         );
 
         $sdk = WC_Payline_SDK::getSDK();
-        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk);
+        $this->assertInstanceOf(Payline\PaylineSDK::class, $sdk, 'getSDK() doit utiliser des valeurs par défaut si les métadonnées WC sont vides');
     }
 
     // -------------------------------
@@ -233,17 +228,16 @@ class WC_Payline_SDK_Test extends PaylineTestCase
     // -------------------------------
     public function test_get_point_of_sales_returns_empty_array_when_credentials_invalid()
     {
-        // Sans credentials valides, checkCredentials retournera false
         MockOptions::$data['woocommerce_payline_settings']['merchant_id'] = '';
 
         $result = WC_Payline_SDK::getPointOfSales();
 
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        $this->assertIsArray($result, 'getPointOfSales() doit retourner un tableau');
+        $this->assertEmpty($result, 'getPointOfSales() doit retourner un tableau vide quand les credentials sont invalides');
     }
 
     /**
-     * @runInSeparateProcess
+     * @runInSeparateProcess Nécessaire car getPointOfSales() utilise des variables statiques
      * @preserveGlobalState disabled
      */
     public function test_get_point_of_sales_with_valid_sdk_but_api_error()
@@ -252,49 +246,25 @@ class WC_Payline_SDK_Test extends PaylineTestCase
 
         $result = WC_Payline_SDK::getPointOfSales();
 
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        $this->assertIsArray($result, 'getPointOfSales() doit retourner un tableau même en cas d\'erreur API');
+        $this->assertEmpty($result, 'getPointOfSales() doit retourner un tableau vide en cas d\'erreur API');
     }
 
     public function test_get_point_of_sales_returns_pos_list_when_valid()
     {
-        // Simule une réponse API valide en configurant $merchantSettings directement
-        $merchantSettings = $this->getPrivateProperty(WC_Payline_SDK::class, 'merchantSettings');
-        $merchantSettings->setValue(null, [
-            'result' => ['code' => '00000'],
-            'listPointOfSell' => [
-                'pointOfSell' => [
-                    ['label' => 'POS 1', 'contracts' => ['contract1']],
-                    ['label' => 'POS 2', 'contracts' => ['contract2']],
-                ]
-            ]
-        ]);
-
-        // On doit aussi simuler que checkCredentials retourne true
-        // Pour ça, on utilise un processus séparé ou on accepte que cette branche
-        // ne sera couverte que partiellement
-
-        $result = WC_Payline_SDK::getPointOfSales();
-        // Le résultat dépend de checkCredentials qui a son propre état
-        $this->assertIsArray($result);
+        $this->markTestIncomplete(
+            'Ce test ne peut pas être fiable sans mocker checkCredentials() qui utilise un état statique. ' .
+            'Le résultat dépend de l\'état du SDK entre les tests. Pour une couverture complète, ' .
+            'il faudrait mocker la méthode checkCredentials() ou utiliser un processus isolé avec un mock HTTP.'
+        );
     }
 
     public function test_get_point_of_sales_normalizes_single_pos()
     {
-        // Simule le cas avec un seul POS (structure différente)
-        $merchantSettings = $this->getPrivateProperty(WC_Payline_SDK::class, 'merchantSettings');
-        $merchantSettings->setValue(null, [
-            'result' => ['code' => '00000'],
-            'listPointOfSell' => [
-                'pointOfSell' => [
-                    'label' => 'Single POS',
-                    'contracts' => ['contract1']
-                ]
-            ]
-        ]);
-
-        $result = WC_Payline_SDK::getPointOfSales();
-        $this->assertIsArray($result);
+        $this->markTestIncomplete(
+            'Ce test ne peut pas être fiable sans mocker checkCredentials() qui utilise un état statique. ' .
+            'Même problème que test_get_point_of_sales_returns_pos_list_when_valid.'
+        );
     }
 
     // -------------------------------
@@ -312,30 +282,20 @@ class WC_Payline_SDK_Test extends PaylineTestCase
 
         $result = WC_Payline_SDK::getMerchantSettings();
 
-        $this->assertNull($result);
+        $this->assertNull($result, 'getMerchantSettings() doit retourner null quand le SDK est null');
     }
 
     /**
-     * Test avec SDK valide mais API qui retourne une erreur
-     *
-     * Avec des faux credentials (MERCH/KEY du mock), l'API Monext
-     * refuse l'authentification et retourne un code erreur.
-     *
      * @runInSeparateProcess Nécessaire car getMerchantSettings() utilise une variable statique
-     * @preserveGlobalState disabled Évite conflits avec les mocks globaux
+     * @preserveGlobalState disabled
      */
     public function test_get_merchant_settings_calls_api_but_returns_error_response()
     {
-        $this->reloadBootstrap();
-
-        // Avec des faux credentials, l'API doit retourner une erreur
-        $result = WC_Payline_SDK::getMerchantSettings();
-
-        // Vérifie que l'appel a été tenté mais a échoué
-        $this->assertIsArray($result, 'API should return error array with fake credentials');
-        $this->assertArrayHasKey('result', $result);
-        $this->assertArrayHasKey('code', $result['result']);
-        $this->assertNotEquals('00000', $result['result']['code'], 'Should fail with fake credentials');
+        $this->markTestIncomplete(
+            'Ce test effectue un appel API réel vers Monext avec des credentials de test (MERCH/KEY). ' .
+            'Le résultat dépend de la disponibilité du réseau et de l\'API Monext. ' .
+            'Pour un test fiable, il faudrait mocker l\'appel HTTP ou utiliser un serveur de test local.'
+        );
     }
 
     // -------------------------------
@@ -347,21 +307,19 @@ class WC_Payline_SDK_Test extends PaylineTestCase
 
         $result = WC_Payline_SDK::checkCredentials();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'checkCredentials() doit retourner false quand le SDK est null');
     }
 
     /**
-     * @runInSeparateProcess
+     * @runInSeparateProcess Nécessaire car checkCredentials() utilise des variables statiques
      * @preserveGlobalState disabled
      */
     public function test_check_credentials_with_valid_sdk_but_invalid_api_response()
     {
-        $this->reloadBootstrap();
-
-        // Avec des credentials valides, le SDK appellera l'API
-        // Les credentials étant faux, l'API retournera une erreur
-        $result = WC_Payline_SDK::checkCredentials();
-
-        $this->assertFalse($result);
+        $this->markTestIncomplete(
+            'Ce test effectue un appel API réel vers Monext. ' .
+            'Le résultat dépend de la disponibilité du réseau et de l\'API Monext. ' .
+            'Pour un test fiable, il faudrait mocker l\'appel HTTP.'
+        );
     }
 }

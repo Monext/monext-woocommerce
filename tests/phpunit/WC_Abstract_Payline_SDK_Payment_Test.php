@@ -88,7 +88,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order->get_id());
 
-        $this->assertEquals($cachedUrl, $result);
+        $this->assertEquals($cachedUrl, $result, 'getRawRedirectUrl() doit retourner l\'URL en cache');
     }
 
     /**
@@ -111,7 +111,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order->get_id());
 
-        $this->assertEquals('https://monext.com/pay/NEW123', $result);
+        $this->assertEquals('https://monext.com/pay/NEW123', $result, 'getRawRedirectUrl() doit retourner l\'URL de redirection');
     }
 
     /**
@@ -133,11 +133,11 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         // Vérifier que le token a été sauvegardé
         $savedToken = MockOptions::$data['plnTokenForOrder_12345'];
-        $this->assertNotEmpty($savedToken);
+        $this->assertNotEmpty($savedToken, 'Le token doit être sauvegardé en cache');
 
         $decodedToken = json_decode($savedToken, true);
-        $this->assertEquals('TOKEN_XYZ789', $decodedToken['token']);
-        $this->assertEquals('https://monext.com/pay/XYZ789', $decodedToken['redirectURL']);
+        $this->assertEquals('TOKEN_XYZ789', $decodedToken['token'], 'Le token sauvegardé doit correspondre');
+        $this->assertEquals('https://monext.com/pay/XYZ789', $decodedToken['redirectURL'], 'L\'URL de redirection doit être sauvegardée');
     }
 
     // =========================================
@@ -194,7 +194,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order->get_id());
 
         // Token ne doit PAS être sauvegardé
-        $this->assertArrayNotHasKey('plnTokenForOrder_12345', MockOptions::$data);
+        $this->assertArrayNotHasKey('plnTokenForOrder_12345', MockOptions::$data, 'Le token ne doit pas être sauvegardé en cas d\'erreur API');
     }
 
     // =========================================
@@ -219,7 +219,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('TOKEN_SUCCESS_123', $result);
+        $this->assertEquals('TOKEN_SUCCESS_123', $result, 'getNewTokenForOrder() doit retourner le token');
     }
 
     /**
@@ -241,7 +241,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $savedToken = MockOptions::$data['plnTokenForOrder_12345'];
         $decodedToken = json_decode($savedToken, true);
-        $this->assertEquals('CACHED_TOKEN_ABC', $decodedToken['token']);
+        $this->assertEquals('CACHED_TOKEN_ABC', $decodedToken['token'], 'Le token sauvegardé doit correspondre');
     }
 
     /**
@@ -297,7 +297,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertNull($result);
+        $this->assertNull($result, 'getNewTokenForOrder() doit retourner null en cas d\'erreur API');
     }
 
     /**
@@ -320,7 +320,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
         $method->invoke($this->gateway, $this->order);
 
         // Pas de cache créé
-        $this->assertArrayNotHasKey('plnTokenForOrder_12345', MockOptions::$data);
+        $this->assertArrayNotHasKey('plnTokenForOrder_12345', MockOptions::$data, 'Aucun cache ne doit être créé en cas d\'erreur');
     }
 
     // =========================================
@@ -352,7 +352,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $result = $this->gateway->process_refund($this->order->get_id(), 50.00, 'Customer request');
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'process_refund() doit retourner true en cas de succès');
     }
 
     public function test_process_refund_returns_true_on_success()
@@ -372,7 +372,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $result = $this->gateway->process_refund($this->order->get_id(), 25.00, 'Refund');
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'process_refund() doit retourner true quand le remboursement est accepté');
     }
 
     public function test_process_refund_returns_wp_error_on_api_failure()
@@ -396,8 +396,8 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
 
         $result = $this->gateway->process_refund($this->order->get_id(), 500.00, 'Refund');
 
-        $this->assertInstanceOf('WP_Error', $result);
-        $this->assertEquals('error', $result->get_error_code());
-        $this->assertStringContainsString('exceeds original transaction', $result->get_error_message());
+        $this->assertInstanceOf('WP_Error', $result, 'process_refund() doit retourner WP_Error en cas d\'échec API');
+        $this->assertEquals('error', $result->get_error_code(), 'Le code d\'erreur doit être "error"');
+        $this->assertStringContainsString('exceeds original transaction', $result->get_error_message(), 'Le message d\'erreur doit mentionner le dépassement de montant');
     }
 }
