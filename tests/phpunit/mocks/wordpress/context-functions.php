@@ -39,3 +39,9 @@ if (!function_exists('in_the_loop')) {
         return MockWordPress::$data['in_the_loop'];
     }
 }
+
+if (!function_exists('is_checkout')) {
+    function is_checkout() {
+        return MockWordPress::$data['is_checkout'] ?? false;
+    }
+}

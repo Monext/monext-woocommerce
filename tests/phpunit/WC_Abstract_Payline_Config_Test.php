@@ -46,7 +46,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'custom_key');
 
-        $this->assertEquals('custom_value', $result);
+        $this->assertEquals('custom_value', $result, 'getConfigValueIfExists doit retourner la valeur configurée');
     }
 
     /**
@@ -58,7 +58,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'nonexistent_key');
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'getConfigValueIfExists doit retourner false quand la clé est absente');
     }
 
     /**
@@ -75,7 +75,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'empty_key');
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'getConfigValueIfExists doit retourner false pour une chaîne vide');
     }
 
     /**
@@ -91,7 +91,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'null_key');
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'getConfigValueIfExists doit retourner false pour une valeur null');
     }
 
     /**
@@ -107,8 +107,8 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'array_key');
 
-        $this->assertIsArray($result);
-        $this->assertCount(2, $result);
+        $this->assertIsArray($result, 'getConfigValueIfExists doit retourner un tableau pour une valeur tableau');
+        $this->assertCount(2, $result, 'Le tableau doit contenir 2 éléments');
     }
 
     // =========================================
@@ -126,7 +126,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_available();
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'is_available() doit retourner true quand activé et contrats configurés');
     }
 
     public function test_is_available_returns_false_when_no_primary_contracts()
@@ -140,7 +140,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_available();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_available() doit retourner false sans contrats primaires');
     }
 
     public function test_is_available_returns_false_when_primary_contracts_missing()
@@ -154,7 +154,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_available();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_available() doit retourner false quand primary_contracts est absent');
     }
 
     // =========================================
@@ -170,7 +170,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_account_connected();
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'is_account_connected() doit retourner true quand tous les credentials sont configurés');
     }
 
     public function test_is_account_connected_returns_false_when_merchant_id_empty()
@@ -182,7 +182,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_account_connected();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_account_connected() doit retourner false quand merchant_id est vide');
     }
 
     public function test_is_account_connected_returns_false_when_merchant_id_missing()
@@ -197,7 +197,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_account_connected();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_account_connected() doit retourner false quand merchant_id est absent');
     }
 
     public function test_is_account_connected_returns_false_when_access_key_empty()
@@ -209,7 +209,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_account_connected();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_account_connected() doit retourner false quand access_key est vide');
     }
 
     public function test_is_account_connected_returns_false_when_access_key_missing()
@@ -223,7 +223,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_account_connected();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_account_connected() doit retourner false quand access_key est absent');
     }
 
     public function test_is_account_connected_returns_false_when_pos_empty()
@@ -235,7 +235,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_account_connected();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_account_connected() doit retourner false quand pos est vide');
     }
 
     public function test_is_account_connected_returns_false_when_pos_missing()
@@ -247,7 +247,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->is_account_connected();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'is_account_connected() doit retourner false quand pos est absent');
     }
 
     // =========================================
@@ -263,7 +263,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->needs_setup();
 
-        $this->assertFalse($result);
+        $this->assertFalse($result, 'needs_setup() doit retourner false quand le compte est connecté');
     }
 
     public function test_needs_setup_returns_true_when_merchant_id_missing()
@@ -275,7 +275,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->needs_setup();
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'needs_setup() doit retourner true quand merchant_id est vide');
     }
 
     public function test_needs_setup_returns_true_when_access_key_missing()
@@ -287,7 +287,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->needs_setup();
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'needs_setup() doit retourner true quand access_key est vide');
     }
 
     public function test_needs_setup_returns_true_when_pos_missing()
@@ -299,7 +299,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->needs_setup();
 
-        $this->assertTrue($result);
+        $this->assertTrue($result, 'needs_setup() doit retourner true quand pos est vide');
     }
 
     public function test_needs_setup_sets_enabled_to_yes_when_account_connected()
@@ -311,7 +311,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $this->gateway->needs_setup();
 
-        $this->assertEquals('yes', $this->gateway->enabled);
+        $this->assertEquals('yes', $this->gateway->enabled, 'enabled doit être "yes" quand le compte est connecté');
     }
 
     public function test_needs_setup_sets_enabled_to_no_when_account_not_connected()
@@ -321,7 +321,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $this->gateway->needs_setup();
 
-        $this->assertEquals('no', $this->gateway->enabled);
+        $this->assertEquals('no', $this->gateway->enabled, 'enabled doit être "no" quand le compte n\'est pas connecté');
     }
 
     // =========================================
@@ -334,8 +334,8 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->getContractsList();
 
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        $this->assertIsArray($result, 'getContractsList() doit retourner un tableau');
+        $this->assertEmpty($result, 'getContractsList() doit retourner un tableau vide quand l\'option est vide');
     }
 
     public function test_get_contracts_list_returns_empty_array_when_option_missing()
@@ -344,8 +344,8 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->getContractsList();
 
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        $this->assertIsArray($result, 'getContractsList() doit retourner un tableau même quand l\'option est absente');
+        $this->assertEmpty($result, 'getContractsList() doit retourner un tableau vide quand l\'option est absente');
     }
 
     public function test_get_contracts_list_returns_formatted_contracts()
@@ -358,12 +358,12 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->getContractsList();
 
-        $this->assertIsArray($result);
-        $this->assertCount(2, $result);
-        $this->assertArrayHasKey('123', $result);
-        $this->assertArrayHasKey('456', $result);
-        $this->assertEquals('Carte Bancaire', $result['123']);
-        $this->assertEquals('Visa', $result['456']);
+        $this->assertIsArray($result, 'getContractsList() doit retourner un tableau');
+        $this->assertCount(2, $result, 'getContractsList() doit retourner 2 contrats');
+        $this->assertArrayHasKey('123', $result, 'Le contrat 123 doit être présent');
+        $this->assertArrayHasKey('456', $result, 'Le contrat 456 doit être présent');
+        $this->assertEquals('Carte Bancaire', $result['123'], 'Le label du contrat 123 doit être "Carte Bancaire"');
+        $this->assertEquals('Visa', $result['456'], 'Le label du contrat 456 doit être "Visa"');
     }
 
     public function test_get_contracts_list_returns_single_contract()
@@ -375,9 +375,9 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $this->gateway->getContractsList();
 
-        $this->assertIsArray($result);
-        $this->assertCount(1, $result);
-        $this->assertEquals('Carte Bancaire', $result['123']);
+        $this->assertIsArray($result, 'getContractsList() doit retourner un tableau');
+        $this->assertCount(1, $result, 'getContractsList() doit retourner 1 contrat');
+        $this->assertEquals('Carte Bancaire', $result['123'], 'Le label du contrat 123 doit être "Carte Bancaire"');
     }
 
     // =========================================
@@ -394,14 +394,13 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, 'return');
 
         // Vérifier que c'est une URL valide
-        $this->assertNotEmpty($result);
+        $this->assertNotEmpty($result, 'get_request_url() doit retourner une valeur non vide');
         $this->assertTrue(filter_var($result, FILTER_VALIDATE_URL) !== false, 'La chaîne retournée doit être une URL valide');
 
-        // Vérifier la structure de l'URL
         $parsedUrl = parse_url($result);
-        $this->assertNotFalse($parsedUrl, 'L\'URL doit être parsable');
-        $this->assertArrayHasKey('scheme', $parsedUrl, 'L\'URL doit avoir un scheme');
-        $this->assertArrayHasKey('host', $parsedUrl, 'L\'URL doit avoir un host');
+        $this->assertNotFalse($parsedUrl, "L'URL doit être parsable");
+        $this->assertArrayHasKey('scheme', $parsedUrl, "L'URL doit avoir un scheme");
+        $this->assertArrayHasKey('host', $parsedUrl, "L'URL doit avoir un host");
         $this->assertContains($parsedUrl['scheme'], array('http', 'https'), 'Le scheme doit être http ou https');
     }
 
@@ -414,7 +413,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'return');
 
-        $this->assertStringContainsString('wc-api=', $result);
+        $this->assertStringContainsString('wc-api=', $result, 'L\'URL doit contenir le paramètre wc-api');
     }
 
     /**
@@ -426,7 +425,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'notification');
 
-        $this->assertStringContainsString('url_type=notification', $result);
+        $this->assertStringContainsString('url_type=notification', $result, 'L\'URL doit contenir url_type=notification');
     }
 
     /**
@@ -439,7 +438,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $urlType);
 
-        $this->assertStringContainsString('url_type=' . $urlType, $result);
+        $this->assertStringContainsString('url_type=' . $urlType, $result, "L'URL doit contenir url_type=$urlType");
     }
 
     public static function urlTypesProvider(): array
@@ -462,7 +461,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, 'return');
 
-        $this->assertStringContainsString('WC_Gateway_Payline_CPT', $result);
+        $this->assertStringContainsString('WC_Gateway_Payline_CPT', $result, 'L\'URL doit contenir le nom de la classe de la gateway');
     }
 
     /**
@@ -474,7 +473,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, '');
 
-        $this->assertStringContainsString('url_type=', $result);
-        $this->assertStringContainsString('wc-api=', $result);
+        $this->assertStringContainsString('url_type=', $result, 'L\'URL doit contenir url_type même avec une valeur vide');
+        $this->assertStringContainsString('wc-api=', $result, 'L\'URL doit contenir wc-api même avec une url_type vide');
     }
 }

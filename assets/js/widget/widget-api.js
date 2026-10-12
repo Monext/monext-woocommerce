@@ -122,10 +122,31 @@ eventFinalstatehasbeenreached= function (e) {
             }
         }, 0);
     } else if (["PAYMENT_CANCELED", "PAYMENT_FAILURE", "TOKEN_EXPIRED"].includes(e.state)) {
-        const resetTokenUrl = new URL(Payline.Api.getCancelAndReturnUrls().cancelUrl);
-        const searchParams = new URLSearchParams(resetTokenUrl.search);
-        searchParams.set('url_type', 'resetToken');
-        window.location.href = `${resetTokenUrl.protocol}//${resetTokenUrl.hostname}${resetTokenUrl.pathname}?${searchParams.toString()}`;
+        //--> Wait for DOM update to simulate a click on the button
+        window.setTimeout(() => {
+            let targetButton;
+
+            switch (e.state) {
+                case "PAYMENT_CANCELED":
+                    targetButton = document.getElementById("pl-mgr-paymentCanceled-payment_canceled_btn");
+                    break;
+                case "PAYMENT_FAILURE":
+                    targetButton = document.getElementById("pl-mgr-paymentFailure-payment_failure_btn");
+                    break;
+                case "TOKEN_EXPIRED":
+                    targetButton = document.getElementById("pl-mgr-tokenExpired-token_expired_btn");
+                    break;
+            }
+
+            if (targetButton) {
+                targetButton.click();
+            } else {
+                const resetTokenUrl = new URL(Payline.Api.getCancelAndReturnUrls().cancelUrl);
+                const searchParams = new URLSearchParams(resetTokenUrl.search);
+                searchParams.set('url_type', 'resetToken');
+                window.location.href = `${resetTokenUrl.protocol}//${resetTokenUrl.hostname}${resetTokenUrl.pathname}?${searchParams.toString()}`;
+            }
+        }, 0);
     }
 };
 

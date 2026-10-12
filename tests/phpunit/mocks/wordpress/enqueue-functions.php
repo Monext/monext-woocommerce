@@ -30,6 +30,17 @@ if (!function_exists('wp_enqueue_script')) {
     }
 }
 
+if (!function_exists('wp_register_script')) {
+    function wp_register_script($handle, $src = '', $deps = [], $ver = false, $in_footer = false) {
+        MockWordPress::$data['registered_scripts'][$handle] = [
+            'src' => $src,
+            'deps' => $deps,
+            'ver' => $ver,
+            'in_footer' => $in_footer
+        ];
+    }
+}
+
 if (!function_exists('load_template')) {
     function load_template($template_file, $require_once = true, $args = []) {
         MockWordPress::$data['loaded_templates'][] = [

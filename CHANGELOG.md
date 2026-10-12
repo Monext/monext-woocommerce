@@ -1,6 +1,18 @@
 ## Changelog
 
 ### 1.5.11
+* Prevent token renew on payment success
+* Invalidate token cache on payment modification
+* Add new phpunit test
+* Check available module updates from github releases
+* Simulate user action on widget CTA
+
+#### Environment (Development, QA validation)
+* WordPress version: 7.0.6
+* WooCommerce version: 10.8.1 , 11.1.2
+* php 8.4
+
+### 1.5.11
 * Added a checkout validation to adapt the payment and order creation workflow (resolves issues found in versions 1.5.9 and 1.5.10).
 * Added minimum requirements.
 * Added comments to the NX/REC contract configuration.

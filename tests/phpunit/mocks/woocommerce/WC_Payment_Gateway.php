@@ -57,6 +57,10 @@ if (!class_exists('WC_Payment_Gateway')) {
             return $this->plugin_id . $this->id . '_' . $key;
         }
 
+        public function get_option_key() {
+            return $this->plugin_id . $this->id . '_settings';
+        }
+
         public function get_tooltip_html($data) {
             return '';
         }
@@ -76,14 +80,8 @@ if (!class_exists('WC_Payment_Gateway')) {
 }
 
 /**
- * Mock WC_Gateway_Payline simple
+ * Mock de WC_Gateway_Payline : supprimé
  *
- * Utilisé par PaylineWallet pour createManageWebWallet()
+ * La vraie classe est maintenant chargée dans bootstrap.php.
+ * createManageWebWallet() est implémenté dans WC_Abstract_Payline.
  */
-if (!class_exists('WC_Gateway_Payline')) {
-    class WC_Gateway_Payline {
-        public function createManageWebWallet() {
-            return MockGatewayPayline::$data['createManageWebWallet_result'];
-        }
-    }
-}

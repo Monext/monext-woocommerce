@@ -210,8 +210,8 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertArrayHasKey('date', $result['order']);
-        $this->assertNotEmpty($result['order']['date']);
+        $this->assertArrayHasKey('date', $result['order'], 'La section order doit contenir une date');
+        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}/', $result['order']['date'], 'La date doit commencer par JJ/MM/AAAA');
     }
 
     // =========================================
@@ -279,6 +279,40 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order);
 
         $this->assertArrayNotHasKey('walletId', $result['buyer'], 'walletId ne doit pas être présent si wallet désactivé');
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public function test_get_web_payment_request_handles_empty_buyer_data()
+    {
+        $order = new WC_Order(99999);
+        $order->set_total('50.00');
+        $order->set_currency('EUR');
+        $order->set_billing(array(
+            'first_name' => '',
+            'last_name' => '',
+            'email' => 'test@example.com',
+            'phone' => '',
+            'address_1' => '',
+            'city' => '',
+            'postcode' => '',
+            'country' => '',
+        ));
+        $order->set_shipping(array(
+            'first_name' => '',
+            'last_name' => '',
+            'address_1' => '',
+            'city' => '',
+            'postcode' => '',
+            'country' => '',
+        ));
+
+        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
+        $result = $method->invoke($this->gateway, $order);
+
+        $this->assertArrayHasKey('buyer', $result, 'La section buyer doit exister même avec des données minimales');
+        $this->assertArrayHasKey('billingAddress', $result, 'La section billingAddress doit exister même avec des données minimales');
     }
 
     // =========================================
