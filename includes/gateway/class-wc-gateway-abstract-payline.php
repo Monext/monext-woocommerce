@@ -467,6 +467,11 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
     public function getNewDraftedOrderId()
     {
+        //This conditional exit allows the browser to return from the payline redirection page
+        if (!$this->is_available() || !isset($this->settings['widget_integration']) || $this->settings['widget_integration'] == 'redirection'){
+            return null;
+        }
+
         if ($this instanceof WC_Gateway_Payline_CPT && $this->is_available() && is_checkout() && ! is_wc_endpoint_url() && WC()->session) {
             if (! WC()->session->get( 'store_api_draft_order' ) ) {
                 $order = (new OrderController())->create_order_from_cart();
