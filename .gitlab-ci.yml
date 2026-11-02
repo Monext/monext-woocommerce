@@ -104,9 +104,10 @@ phpunit:
 
   before_script:
     # install system deps and PHP extensions commonly used by PHPUnit/WordPress/WooCommerce projects
+    - sed -i 's|deb.debian.org/debian-security|archive.debian.org/debian-archive/debian-security|g' /etc/apt/sources.list || true
     - apt-get update -yqq
     - apt-get install -y --no-install-recommends git unzip libicu-dev libonig-dev libzip-dev zlib1g-dev libxml2-dev curl
-    - docker-php-ext-configure zip --with-libzip || true
+    #- docker-php-ext-configure zip --with-libzip || true
     # install soap as well (nécessaire pour monext/payline-sdk)
     - docker-php-ext-install -j$(nproc) intl mbstring xml zip soap || true
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
