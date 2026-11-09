@@ -1,6 +1,6 @@
 <?php
 
-use Payline\PaylineSDK;
+use Payline\Api\ApiInterface as PaylineSDK;
 
 /**
  * Payline module for WooCommerce
@@ -92,26 +92,14 @@ class WC_Gateway_Payline_REC extends WC_Abstract_Recurring_Payline_NX {
         $requestParams = parent::getWebPaymentRequest($order);
 
         $totalAmount = $requestParams['payment']['amount'];
-        $requestParams['recurring']['firstAmount'] = $totalAmount;
+        $requestParams['payment']['recurring']['installmentAmount'] = $totalAmount;
+        $requestParams['payment']['recurring']['frequency'] = $this->getFrequencyForRecurringPayments($this->settings['billing_cycle']);
+        $requestParams['payment']['recurring']['installmentDate'] = '01'; //  [01 à 30]
 
-        $requestParams['recurring']['amount'] = $totalAmount;
-        $requestParams['recurring']['billingCycle'] = $this->settings['billing_cycle'];
-
-
-        $requestParams['recurring']['billingDay'] = '01'; //  [01 à 30]
-
-        $numberDaysCycle = $this->getDaysForCycles($this->settings['billing_cycle']);
-
-        //$today    = current_time( 'd/m/Y' );
-        $requestParams['recurring']['startDate'] = current_datetime()->modify( '+' .$numberDaysCycle. ' day' )->format( 'd/m/Y' );; // dd/mm/yyyy
-
-        if($this->settings['billing_cycle'] && $this->settings['max_records']) {
-            $numberDaysToLastDate = $numberDaysCycle * $this->settings['max_records'];
-            $requestParams['recurring']['endDate'] = current_datetime()->modify( '+' .$numberDaysToLastDate. ' day' )->format( 'd/m/Y' );;
-
+        $maxRecords = $this->settings['max_records'];
+        if ($maxRecords >= 1) {
+            $requestParams['payment']['recurring']['totalInstallments'] = $this->settings['max_records'];
         }
-
-        //$requestParams['recurring']['billingLeft'] = $this->settings['max_records'];
 
         do_action('payline_before_do_web_payment_rec', $requestParams, $this);
 

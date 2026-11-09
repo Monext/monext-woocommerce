@@ -3,7 +3,7 @@
  * Plugin Name: Monext
  * Plugin URI: https://docs.payline.com/display/DT/Plugin+WooCommerce
  * Description: integrations of Monext payment solution in your WooCommerce store
- * Version: 1.5.12
+ * Version: 1.6.0
  * Author: Monext
  * Text Domain: monext-online-woocommerce
  * Author URI: https://www.monext.fr
@@ -37,17 +37,12 @@ use Automattic\WooCommerce\StoreApi\Utilities\OrderController;
 
 if (!defined('ABSPATH')) exit;
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 define('WCPAYLINE_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('WCPAYLINE_PLUGIN_PATH', plugin_dir_path(__FILE__));
 define('WCPAYLINE_PLUGIN_CLASS', plugin_basename(__FILE__));
-define('WCPAYLINE_PLUGIN_VERSION', '1.5.12');
-
-if (is_admin()) {
-    if (!class_exists('WC_Payline_Update_Checker')) {
-        require_once __DIR__ . '/includes/class-wc-payline-update-checker.php';
-    }
-    new WC_Payline_Update_Checker(WCPAYLINE_PLUGIN_CLASS, 'Monext/monext-woocommerce', WCPAYLINE_PLUGIN_VERSION);
-}
+define('WCPAYLINE_PLUGIN_VERSION', '1.6.0');
 
 function woocommerce_payline_activation()
 {
@@ -56,6 +51,7 @@ function woocommerce_payline_activation()
 
         load_plugin_textdomain('payline', false, dirname(plugin_basename(__FILE__)) . '/languages/');
 
+        /* translators: %s: payment gateway name */
         $message = sprintf(__('Sorry! In order to use WooCommerce %s Payment plugin, you need to install and activate the WooCommerce plugin.', 'payline'), 'Payline');
         wp_die($message, 'WooCommerce Payline Gateway Plugin', array('back_link' => true));
     } elseif (!wc_payline_vendors_loaded()) {
@@ -166,6 +162,18 @@ function woocommerce_payline_init() {
         require_once 'includes/front/payline-wallet.php';
     }
 
+    if (!class_exists('ApiInterface')) {
+        require_once 'Api/ApiInterface.php';
+    }
+
+    if (!class_exists('MonextClient')) {
+        require_once 'Api/MonextClient.php';
+    }
+
+    if (!class_exists('MonextCompatClient')) {
+        require_once 'Api/MonextCompatClient.php';
+    }
+
     if (!class_exists('PaylineValidateCheckoutEndpoint')) {
         require_once 'includes/payline-validate-checkout-endpoint.php';
     }
@@ -253,8 +261,8 @@ add_filter('woocommerce_payment_gateways', 'woocommerce_payline_add_method');
  * @return mixed
  */
 function woocommerce_payline_add_link($links, $file) {
-	$links[] = '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=payline').'">' . __('Settings') .'</a>';
-    $links[] = '<a href="'.admin_url('tools.php?page=payline-logs').'">' . __('Logs Viewer') .'</a>';
+	$links[] = '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=payline').'">' . __('Settings', 'payline') .'</a>';
+    $links[] = '<a href="'.admin_url('tools.php?page=payline-logs').'">' . __('Logs Viewer', 'payline') .'</a>';
 	return $links;
 }
 add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'woocommerce_payline_add_link',  10, 2);
@@ -426,8 +434,8 @@ function payline_add_logs_viewer_in_tools_submenu()
     }
 
 	add_management_page(
-		__('Monext Logs Viewer'),
-		__('Monext Logs Viewer'),
+		__('Monext Logs Viewer', 'payline'),
+		__('Monext Logs Viewer', 'payline'),
 		'manage_options',
 		'payline-logs',
 		['PaylineLogsViewer', 'showLogs']
@@ -512,6 +520,11 @@ function checkVersion()
     if (version_compare($pluginUpgradeVersion, '1.5.6', '<')) {
         WC_Payline_Upgrades::upgrade_to_1_5_6();
         update_plugin_version('1.5.6');
+    }
+
+    if (version_compare($pluginUpgradeVersion, '1.6.0', '<')) {
+        WC_Payline_Upgrades::upgrade_to_1_6_0();
+        update_plugin_version('1.6.0');
     }
 }
 

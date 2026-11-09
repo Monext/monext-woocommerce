@@ -20,44 +20,40 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-0: *.js\n"
 "X-Loco-Version: 2.6.7; wp-6.4.3-alpha-57183\n"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1628
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1632
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1642
+#. translators: %s: setting field name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1316
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1321
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1327
 #, php-format
 msgid "%s is mandatory"
 msgstr "%s est obligatoire"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:79
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:83
 msgid "A transaction every two years"
 msgstr "Une échéances tous les deux ans"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1632
+#. translators: %s: setting field name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1321
 msgid "Access Key"
 msgstr "Clé d'accès"
 
-#: includes/gateway/class-wc-gateway-payline.php:98
+#: includes/gateway/class-wc-gateway-payline.php:101
 msgid "Access key"
 msgstr "Clé d'accès"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:423
+#: includes/gateway/class-wc-gateway-abstract-payline.php:241
 msgid "All"
 msgstr "Tout"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:717
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1201
-#, php-format
-msgid "An error occured while displaying the payment form (error code %s : %s). Please contact us."
-msgstr "Une erreur s'est produite lors de l'affichage du formulaire de paiement (code d'erreur %s : %s). Veuillez nous contactez."
-
-#: includes/gateway/class-wc-gateway-payline-cpt.php:130
+#: includes/gateway/class-wc-gateway-payline-cpt.php:138
 msgid "Authorization"
 msgstr "Autorisation (validation nécessaire sous 7 jours)"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:131
+#: includes/gateway/class-wc-gateway-payline-cpt.php:139
 msgid "Authorization + Capture"
 msgstr "Autorisation + Capture (paiement immédiat)"
 
-#: includes/gateway/class-wc-gateway-payline.php:181
+#: includes/gateway/class-wc-gateway-payline.php:187
 msgid "Based on browser"
 msgstr "Sur la base de navigateur"
 
@@ -65,31 +61,27 @@ msgstr "Sur la base de navigateur"
 msgid "Billing left"
 msgstr "Nombre d'échéances"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1218
-msgid "Cancel payment"
-msgstr "Annuler le paiement"
-
-#: includes/gateway/class-wc-gateway-payline-cpt.php:152
+#: includes/gateway/class-wc-gateway-payline-cpt.php:160
 msgid "Choose the status of payed order"
 msgstr "Définir le statut d'une commande payée"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:150
+#: includes/gateway/class-wc-gateway-payline-cpt.php:158
 msgid "Completed"
 msgstr "Terminée"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:156
+#: includes/gateway/class-wc-gateway-payline-cpt.php:164
 msgid "Custom page code"
 msgstr "Page personnalisée"
 
-#: includes/gateway/class-wc-gateway-payline.php:170
+#: includes/gateway/class-wc-gateway-payline.php:176
 msgid "Debug logging"
 msgstr "Journal des logs"
 
-#: includes/gateway/class-wc-gateway-payline.php:177
+#: includes/gateway/class-wc-gateway-payline.php:183
 msgid "Default language"
 msgstr "Langue par défaut"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:149
+#: includes/gateway/class-wc-gateway-payline-cpt.php:157
 msgid "Default Woocommerce status (processing)"
 msgstr "Statut par défaut de Woocommerce (En cours)"
 
@@ -97,8 +89,8 @@ msgstr "Statut par défaut de Woocommerce (En cours)"
 msgid "Define a list of product ids that can be payed with REC. Values must be separated by ;"
 msgstr "Renseigner une liste d'ID de produits qui peuvent être payé avec un paiement récurrent. Les valeurs doivent être séparées par des ;"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:53
-#: includes/gateway/class-wc-gateway-payline-cpt.php:98
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:55
+#: includes/gateway/class-wc-gateway-payline-cpt.php:104
 msgid "Description"
 msgstr "Description"
 
@@ -106,47 +98,43 @@ msgstr "Description"
 msgid "Eligible product ids"
 msgstr "ID produits élligibles"
 
-#: includes/gateway/class-wc-gateway-payline.php:183
+#: includes/gateway/class-wc-gateway-payline.php:189
 msgid "en"
 msgstr "en"
 
-#: includes/gateway/class-wc-gateway-payline.php:172
+#: includes/gateway/class-wc-gateway-payline.php:178
 msgid "Enable"
 msgstr "Activer"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:36
-#: includes/gateway/class-wc-gateway-payline-cpt.php:86
+#. translators: %s: payment gateway name
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:38
+#: includes/gateway/class-wc-gateway-payline-cpt.php:92
 #, php-format
 msgid "Enable %s"
 msgstr "Activer %s"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:106
+#: includes/gateway/class-wc-gateway-payline-cpt.php:114
 msgid "Enable wallet"
 msgstr "Activer le portefeuille"
 
-#: includes/gateway/class-wc-gateway-payline.php:182
+#: includes/gateway/class-wc-gateway-payline.php:188
 msgid "fr"
 msgstr "fr"
 
-#: includes/gateway/class-wc-gateway-payline.php:107
+#: includes/gateway/class-wc-gateway-payline.php:113
 msgid "Homologation"
 msgstr "Homologation (test)"
 
-#: includes/gateway/class-wc-gateway-payline.php:245
+#: includes/gateway/class-wc-gateway-payline.php:251
 msgid "Host"
 msgstr "Hôte"
-
-#. Author URI of the plugin
-#: woocommerce-payline.php
-msgid "http://www.monext.fr"
-msgstr "http://www.monext.fr"
 
 #. Plugin URI of the plugin
 #: woocommerce-payline.php
 msgid "https://docs.payline.com/display/DT/Plugin+WooCommerce"
 msgstr "https://docs.payline.com/display/DT/Plugin+WooCommerce"
 
-#: includes/gateway/class-wc-gateway-payline.php:253
+#: includes/gateway/class-wc-gateway-payline.php:259
 msgid "Login"
 msgstr "Utilisateur"
 
@@ -154,8 +142,9 @@ msgstr "Utilisateur"
 msgid "Maximum records"
 msgstr "Nombre maximum d'échéances"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1628
-#: includes/gateway/class-wc-gateway-payline.php:92
+#. translators: %s: setting field name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1316
+#: includes/gateway/class-wc-gateway-payline.php:95
 msgid "Merchant ID"
 msgstr "Identifiant Monext"
 
@@ -165,93 +154,85 @@ msgstr "Identifiant Monext"
 msgid "Monext"
 msgstr "Monext"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:72
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:76
 msgid "One transaction every seven days"
 msgstr "Une échéances tous les 7 jours"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:77
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:81
 msgid "One transaction every six months"
 msgstr "Une échéances tous les 6 mois"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:76
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:80
 msgid "One transaction every three months"
 msgstr "Une échéances tous les 3 mois"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:75
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:79
 msgid "One transaction every two months"
 msgstr "Une échéances tous les 2 mois"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:71
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:75
 msgid "One transaction per day"
 msgstr "Une échéances tous les jours"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:74
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:78
 msgid "One transaction per month"
 msgstr "Une échéances tous les mois"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:78
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:82
 msgid "One transaction per year"
 msgstr "Une échéances tous les ans"
 
-#: includes/gateway/class-wc-gateway-payline.php:257
+#: includes/gateway/class-wc-gateway-payline.php:263
 msgid "Password"
 msgstr "Mot de passe"
 
-#: includes/gateway/class-wc-gateway-payline.php:100
-#, php-format
-msgid "Password used to call %s web services (available in the %s administration center)"
-msgstr "Mot de passe utilisé pour appeler les services web %s (disponible dans le centre d'administration %s)"
-
-#: includes/gateway/class-wc-gateway-payline-cpt.php:145
+#: includes/gateway/class-wc-gateway-payline-cpt.php:153
 msgid "Payed order status"
 msgstr "Statut commande payée"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1144
-msgid "Payment"
-msgstr "Paiement"
-
-#: includes/gateway/class-wc-gateway-payline-cpt.php:126
+#: includes/gateway/class-wc-gateway-payline-cpt.php:134
 msgid "Payment action"
 msgstr "Action de paiement"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:67
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:71
 msgid "Payment frequencies"
 msgstr "Fréquence des échéances"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:313
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1441
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1442
+#: includes/gateway/class-wc-gateway-abstract-payline.php:131
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1116
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1117
 msgid "Payment in progress"
 msgstr "Paiement en cours"
 
 #: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:29
-#: includes/gateway/class-wc-gateway-payline-cpt.php:79
+#: includes/gateway/class-wc-gateway-payline-cpt.php:83
 msgid "PAYMENT SETTINGS"
 msgstr "PARAMETRES DE PAIEMENT"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:107
+#: includes/gateway/class-wc-gateway-payline-cpt.php:115
 msgid "Please note: This service is optional and can be configured via the Monext Online Administration Center"
 msgstr "Attention : Service en option et paramétrable à partir du Centre d'Administration Monext Online."
 
-#: includes/gateway/class-wc-gateway-payline.php:249
+#: includes/gateway/class-wc-gateway-payline.php:255
 msgid "Port"
 msgstr "Port"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:177
+#: includes/gateway/class-wc-gateway-payline-cpt.php:185
 #: includes/gateway/class-wc-gateway-payline-nx.php:45
 #: includes/gateway/class-wc-gateway-payline-rec.php:78
 msgid "Primary contracts"
 msgstr "Contrats primaires"
 
-#: includes/gateway/class-wc-gateway-payline.php:108
+#: includes/gateway/class-wc-gateway-payline.php:114
 msgid "Production"
 msgstr "Production"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1657
+#. translators: %s: settings section name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1354
 msgid "PROXY SETTINGS"
 msgstr "PARAMETRES PROXY"
 
-#: includes/gateway/class-wc-gateway-payline.php:184
+#: includes/gateway/class-wc-gateway-payline.php:190
 msgid "pt"
 msgstr "pt"
 
@@ -259,20 +240,21 @@ msgstr "pt"
 msgid "Recurring billing number. Mandatory field"
 msgstr "Nombre d'échéances. Champs obligatoire"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:217
+#: includes/gateway/class-wc-gateway-payline-cpt.php:225
 msgid "Redirection mode"
 msgstr "Mode Redirection"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1525
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1216
 msgid "Refund failed."
 msgstr "Remboursement en erreur"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1547
+#. translators: %1$s: refund amount, %2$s: refund transaction ID
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1239
 #, php-format
 msgid "Refunded %1$s - Refund ID: %2$s"
 msgstr "Remboursement de %1$s - Transaction ID: %2$s"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1669
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1367
 msgid "Reset configuration"
 msgstr "Réinitialiser la configuration"
 
@@ -280,91 +262,75 @@ msgstr "Réinitialiser la configuration"
 msgid "Set a number maximum of records or leave empty"
 msgstr "Définir le nombre maximum d'échéances ou laissez vide"
 
-#: woocommerce-payline.php:51
+#. translators: %s: payment gateway name
+#: woocommerce-payline.php:55
 #, php-format
 msgid "Sorry! In order to use WooCommerce %s Payment plugin, you need to install and activate the WooCommerce plugin."
 msgstr "Désolé ! Pour utiliser WooCommerce %s de Paiement plugin, vous devez installer et activer le plugin WooCommerce."
 
 #: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:34
-#: includes/gateway/class-wc-gateway-payline-cpt.php:84
-#: includes/gateway/class-wc-gateway-payline-cpt.php:223
+#: includes/gateway/class-wc-gateway-payline-cpt.php:88
+#: includes/gateway/class-wc-gateway-payline-cpt.php:231
 msgid "Status"
 msgstr "Statut"
 
-#: includes/gateway/class-wc-gateway-payline.php:103
+#: includes/gateway/class-wc-gateway-payline.php:109
 msgid "Target environment"
 msgstr "Environnement cible"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1623
-msgid "The SOAP extension is not enabled in your PHP installation and is required"
-msgstr "L'extension php SOAP est requise mais n'est pas active "
-
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1478
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1169
 msgid "There was a error processing your payment."
 msgstr "Une erreur s'est produite durant le paiement."
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:55
-#: includes/gateway/class-wc-gateway-payline-cpt.php:100
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:57
+#: includes/gateway/class-wc-gateway-payline-cpt.php:106
 msgid "This controls the description which the user sees during checkout."
 msgstr "La description qui est affichée à l’utilisateur lorsque la méthode Payline est sélectionnée."
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:43
-#: includes/gateway/class-wc-gateway-payline-cpt.php:93
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:45
+#: includes/gateway/class-wc-gateway-payline-cpt.php:99
 msgid "This controls the title which the user sees during checkout."
 msgstr "Libellé sous lequel le paiement via Payline est proposé à l’acheteur dans le processus de commande."
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:41
-#: includes/gateway/class-wc-gateway-payline-cpt.php:91
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:43
+#: includes/gateway/class-wc-gateway-payline-cpt.php:97
 msgid "Title"
 msgstr "Titre"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1393
-#, php-format
-msgid "Token %s does not match expected %s for order %s"
-msgstr "Le token %s ne correspond pas à  %s for order %s"
-
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:73
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:77
 msgid "Two transactions per month"
 msgstr "Deux échéances par mois"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:133
+#: includes/gateway/class-wc-gateway-payline-cpt.php:141
 msgid "Type of transaction created after a payment"
 msgstr "Type de transaction créée après un paiement"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:104
+#: includes/gateway/class-wc-gateway-payline-cpt.php:112
 msgid "Wallet"
 msgstr "Portefeuille"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1651
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1346
 msgid "You are in homologation mode, payments are simulated !"
 msgstr "Vous êtes en mode de test, les paiements sont simulés!"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:56
-#: includes/gateway/class-wc-gateway-payline-cpt.php:101
+#. translators: %s: payment service name
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:60
+#: includes/gateway/class-wc-gateway-payline-cpt.php:109
 #, php-format
 msgid "You will be redirected on %s secured pages at the end of your order."
 msgstr "Vous allez être redirigé sur les pages sécurisées de %s à la fin de votre commande."
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1617
+#. translators: %s: payment service name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1310
 #, php-format
 msgid "Your %s configuration parameters are reset."
 msgstr "Les paramètres de configuration de votre %s sont réinitialisés."
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:312
+#: includes/gateway/class-wc-gateway-abstract-payline.php:130
 msgid "Payment on hold"
 msgstr "Paiement en attente"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:635
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1241
-#, php-format
-msgid "You can't be redirected to payment page (error code %s : %s). Please contact us."
-msgstr "Vous ne pouvez pas être redirigé vers la page de paiement (code d'erreur %s : %s). Veuillez nous contacter."
-
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1275
-msgid "Payment was canceled."
-msgstr "Le paiement a été annulé."
-
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1277
+#: includes/gateway/class-wc-gateway-abstract-payline.php:943
 msgid "Payment cannot be canceled now. Please contact us."
 msgstr "Le paiement ne peut pas être annulé maintenant. Veuillez nous contacter."
 
@@ -382,212 +348,214 @@ msgstr "Fichier de log"
 msgid "File content"
 msgstr "Contenu du fichier"
 
-#: woocommerce-payline.php:249
+#: woocommerce-payline.php:265
 msgid "Logs Viewer"
 msgstr "Visionneur de logs"
 
-#: includes/gateway/class-wc-gateway-payline.php:164
+#: includes/gateway/class-wc-gateway-payline.php:170
 msgid "Smartdisplay parameter"
 msgstr "Paramètre Smartdisplay"
 
-#: includes/gateway/class-wc-gateway-payline.php:166
+#: includes/gateway/class-wc-gateway-payline.php:172
 msgid "Added in doWebPayment privateData as display.rule.param"
 msgstr "Ajouté dans le privateData du doWebPayment en tant que display.rule.param"
 
-#: includes/gateway/class-wc-gateway-payline.php:210
+#: includes/gateway/class-wc-gateway-payline.php:216
 msgid "Type Refused"
 msgstr "Type refusé"
 
-#: includes/gateway/class-wc-gateway-payline.php:215
+#: includes/gateway/class-wc-gateway-payline.php:221
 msgid "Type Cancelled"
 msgstr "Type annulé"
 
-#: includes/gateway/class-wc-gateway-payline.php:220
+#: includes/gateway/class-wc-gateway-payline.php:226
 msgid "Type Error"
 msgstr "Type erreur"
 
-#: includes/gateway/class-wc-gateway-payline.php:212
+#: includes/gateway/class-wc-gateway-payline.php:218
 msgid "Your payment has been refused"
 msgstr "Votre paiement a été refusé"
 
-#: includes/gateway/class-wc-gateway-payline.php:217
+#: includes/gateway/class-wc-gateway-payline.php:223
 msgid "Your payment has been cancelled"
 msgstr "Votre paiement a été annulé"
 
-#: includes/gateway/class-wc-gateway-payline.php:222
+#: includes/gateway/class-wc-gateway-payline.php:228
 msgid "Your payment is in error"
 msgstr "Votre paiement est en erreur"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1637
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1337
 msgid "Please select at least one contract in contracts tab"
 msgstr "Veuillez sélectionner au moins un contrat dans l’onglet Contrats"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1642
-#: includes/gateway/class-wc-gateway-payline.php:114
+#. translators: %s: setting field name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1327
+#: includes/gateway/class-wc-gateway-payline.php:120
 msgid "Point of Sales"
 msgstr "Point de vente"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:172
+#: includes/gateway/class-wc-gateway-payline-cpt.php:180
 #: includes/gateway/class-wc-gateway-payline-nx.php:40
 #: includes/gateway/class-wc-gateway-payline-rec.php:73
 msgid "CONTRACTS"
 msgstr "CONTRATS"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:135
-#: includes/gateway/class-wc-gateway-payline-cpt.php:180
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:155
+#: includes/gateway/class-wc-gateway-payline-cpt.php:188
 msgid "Contracts displayed on web payment page."
 msgstr "Contrats affichés sur la page de paiement en ligne."
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:188
+#: includes/gateway/class-wc-gateway-payline-cpt.php:196
 msgid "PAYMENT FORM"
 msgstr "FORMULAIRE DE PAIEMENT"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:230
+#: includes/gateway/class-wc-gateway-payline-cpt.php:238
 msgid "CTA Label"
 msgstr "Libellé du bouton d’action"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:232
+#: includes/gateway/class-wc-gateway-payline-cpt.php:240
 msgid "Confirm and pay"
 msgstr "Confirmer et payer"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:233
+#: includes/gateway/class-wc-gateway-payline-cpt.php:241
 msgid "For example : \"Confirm and pay {{amount}}\" will display <em>Confirm and pay 142.56 EUR</em><br />{{amount}} is optional<br /><strong>No html tags allowed</strong>"
 msgstr "Par exemple : « Confirmer et payer {{amount}} » affichera <em>Confirmer et payer 142.56 EUR</em><br />{{amount}} est facultatif<br /><strong>Les balises HTML ne sont pas autorisées</strong>"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:245
-#: includes/gateway/class-wc-gateway-payline-cpt.php:289
+#: includes/gateway/class-wc-gateway-payline-cpt.php:253
+#: includes/gateway/class-wc-gateway-payline-cpt.php:297
 msgid "Black"
 msgstr "Noir"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:246
+#: includes/gateway/class-wc-gateway-payline-cpt.php:254
 msgid "Red"
 msgstr "Rouge"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:247
+#: includes/gateway/class-wc-gateway-payline-cpt.php:255
 msgid "Green"
 msgstr "Vert"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:248
+#: includes/gateway/class-wc-gateway-payline-cpt.php:256
 msgid "Dark grey"
 msgstr "Gris foncé"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:249
+#: includes/gateway/class-wc-gateway-payline-cpt.php:257
 msgid "Yellow"
 msgstr "Jaune"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:295
+#: includes/gateway/class-wc-gateway-payline-cpt.php:303
 msgid "CTA Font size"
 msgstr "Taille de police du bouton"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:300
-#: includes/gateway/class-wc-gateway-payline-cpt.php:313
+#: includes/gateway/class-wc-gateway-payline-cpt.php:308
+#: includes/gateway/class-wc-gateway-payline-cpt.php:321
 msgid "Small"
 msgstr "Petite"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:301
-#: includes/gateway/class-wc-gateway-payline-cpt.php:314
+#: includes/gateway/class-wc-gateway-payline-cpt.php:309
+#: includes/gateway/class-wc-gateway-payline-cpt.php:322
 msgid "Average"
 msgstr "Moyenne"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:302
-#: includes/gateway/class-wc-gateway-payline-cpt.php:315
+#: includes/gateway/class-wc-gateway-payline-cpt.php:310
+#: includes/gateway/class-wc-gateway-payline-cpt.php:323
 msgid "Big"
 msgstr "Grande"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:307
+#: includes/gateway/class-wc-gateway-payline-cpt.php:315
 msgid "Border radius"
 msgstr "Rayon de bordure"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:312
+#: includes/gateway/class-wc-gateway-payline-cpt.php:320
 msgid "None"
 msgstr "Aucun"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:320
+#: includes/gateway/class-wc-gateway-payline-cpt.php:328
 msgid "Widget background"
 msgstr "Arrière-plan du widget"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:325
+#: includes/gateway/class-wc-gateway-payline-cpt.php:333
 msgid "Lighter"
 msgstr "Plus clair"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:326
+#: includes/gateway/class-wc-gateway-payline-cpt.php:334
 msgid "Darker"
 msgstr "Plus foncé"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:331
+#: includes/gateway/class-wc-gateway-payline-cpt.php:339
 msgid "Text under CTA"
 msgstr "Texte sous le bouton"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:341
+#: includes/gateway/class-wc-gateway-payline-cpt.php:349
 msgid "Preview CTA"
 msgstr "Aperçu du bouton"
 
-#: includes/gateway/class-wc-gateway-payline.php:303
+#: includes/gateway/class-wc-gateway-payline.php:313
 msgid "Please chose a Point of Sale to get contracts"
 msgstr "Veuillez choisir un point de vente pour obtenir les contrats"
 
-#: woocommerce-payline.php:248
+#: woocommerce-payline.php:264
 msgid "Settings"
 msgstr "Paramètres"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1721
+#. translators: %s: order status name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1420
 #, php-format
 msgid "When order status is \"%s\""
 msgstr "Quand le status de la commande est \"%s\""
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:210
+#: includes/gateway/class-wc-gateway-payline-cpt.php:218
 msgid "Widget integration mode"
 msgstr "Mode d'intégration du widget"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:214
+#: includes/gateway/class-wc-gateway-payline-cpt.php:222
 msgid "In-Shop Tab mode"
-msgstr "In-Shop mode tabulation"
+msgstr "In-Shop Tab mode"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:215
+#: includes/gateway/class-wc-gateway-payline-cpt.php:223
 msgid "In-Shop Column mode"
-msgstr "In-Shop mode colonne"
+msgstr "In-Shop Column mode"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:216
+#: includes/gateway/class-wc-gateway-payline-cpt.php:224
 msgid "In-Shop Lightbox mode"
-msgstr "In-Shop mode popup"
+msgstr "In-Shop Lightbox mode"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:137
+#: includes/gateway/class-wc-gateway-payline-cpt.php:145
 msgid "Capture payment on defined event"
 msgstr "Capturer la paiement sur l'événement"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:141
+#: includes/gateway/class-wc-gateway-payline-cpt.php:149
 msgid "Choose a status to trigger a payment capture"
 msgstr "Choisissez un statut pour déclencher une capture de paiement"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:225
+#: includes/gateway/class-wc-gateway-payline-cpt.php:233
 msgid "Customize widget"
 msgstr "Customiser le widget"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:240
+#: includes/gateway/class-wc-gateway-payline-cpt.php:248
 msgid "CTA background color"
 msgstr "Couleur de fond du bouton"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:250
+#: includes/gateway/class-wc-gateway-payline-cpt.php:258
 msgid "Custom color"
 msgstr "Couleur personnalisée"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:258
+#: includes/gateway/class-wc-gateway-payline-cpt.php:266
 msgid "For example : #FF00BB"
 msgstr "Pax example : #FF00BB"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:284
+#: includes/gateway/class-wc-gateway-payline-cpt.php:292
 msgid "CTA font color"
 msgstr "Couleur de texte du bouton"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:290
+#: includes/gateway/class-wc-gateway-payline-cpt.php:298
 msgid "White"
 msgstr "Blanc"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:334
+#: includes/gateway/class-wc-gateway-payline-cpt.php:342
 msgid "For example : Clicking on the button automatically implies acceptance of the T&Cs<br /><strong>No html tags allowed, max 255 chars.</strong>"
 msgstr "Par exemple : cliquer sur le bouton implique automatiquement l'acceptation des conditions générales. <br /><strong>Les balises HTML ne sont pas autorisées, 255 caractères maximum.</strong>"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:255
+#: includes/gateway/class-wc-gateway-payline-cpt.php:263
 msgid "CTA background custom color"
 msgstr "Couleur de fond personnalisée du bouton"
 
@@ -596,7 +564,7 @@ msgstr "Couleur de fond personnalisée du bouton"
 msgid "My Wallet"
 msgstr "Mon portefeuille"
 
-#: includes/gateway/class-wc-gateway-payline.php:33
+#: includes/gateway/class-wc-gateway-payline.php:35
 msgid "Accept multiple online payments methods"
 msgstr "Acceptez plusieurs modes de paiement en ligne"
 
@@ -605,60 +573,57 @@ msgstr "Acceptez plusieurs modes de paiement en ligne"
 msgid "integrations of Monext payment solution in your WooCommerce store"
 msgstr "intégrations de solution de paiement Monext dans votre magasin de WooCommerce"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:244
+#: includes/gateway/class-wc-gateway-abstract-payline.php:60
 msgid "Pay via Monext"
 msgstr "Payer avec Monext"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1439
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1114
 msgid "Fraud alert. See details in Monext administration center"
 msgstr "Alerte sur tentative de fraudeVoir les détail dans le centre d'administration de Payline"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1649
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1344
 msgid "Your settings is correct, connexion with Monext is established"
 msgstr "Vos paramètres sont corrects, connexion avec Monext établie"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1655
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1657
+#. translators: %s: settings section name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1351
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1354
 #, php-format
 msgid "Unable to connect to Monext, check your %s"
 msgstr "Impossible de se connecter à Monext, vérifiez votre%s"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1655
+#. translators: %s: settings section name
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1351
 msgid "MONEXT GATEWAY ACCESS"
 msgstr "ACCES PASSERELLE ACCESS"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:1659
-#, php-format
-msgid "Unable to connect to Monext (code %s : %s)"
-msgstr "Impossible de se connecter à Monext (Code %s : %s)"
-
-#: includes/gateway/class-wc-gateway-payline-cpt.php:244
-#: includes/gateway/class-wc-gateway-payline-cpt.php:288
-#: includes/gateway/class-wc-gateway-payline-cpt.php:299
-#: includes/gateway/class-wc-gateway-payline-cpt.php:311
-#: includes/gateway/class-wc-gateway-payline-cpt.php:324
+#: includes/gateway/class-wc-gateway-payline-cpt.php:252
+#: includes/gateway/class-wc-gateway-payline-cpt.php:296
+#: includes/gateway/class-wc-gateway-payline-cpt.php:307
+#: includes/gateway/class-wc-gateway-payline-cpt.php:319
+#: includes/gateway/class-wc-gateway-payline-cpt.php:332
 msgid "Monext default"
 msgstr "Défaut Monext"
 
-#: includes/gateway/class-wc-gateway-payline.php:95
+#: includes/gateway/class-wc-gateway-payline.php:98
 msgid "Your Monext account identifier"
 msgstr "Votre identifiant de compte Monext"
 
-#: includes/gateway/class-wc-gateway-payline.php:110
+#: includes/gateway/class-wc-gateway-payline.php:116
 msgid "Monext destination environement of your requests"
 msgstr "Environnement de destination Monext de vos demandes"
 
-#: includes/gateway/class-wc-gateway-payline.php:116
+#: includes/gateway/class-wc-gateway-payline.php:122
 msgid "If the list is empty, please check your Monext account identifier and resave"
 msgstr "Si la liste est vide, veuillez vérifier l’identifiant de votre compte Monext et enregistrer à nouveau"
 
-#: includes/gateway/class-wc-gateway-payline.php:186
+#: includes/gateway/class-wc-gateway-payline.php:192
 msgid "Language used to display Monext web payment pages"
 msgstr "Langue utilisée pour afficher les pages de paiement Monext web"
 
 #: templates/admin/logs-viewer.php:11
-#: woocommerce-payline.php:421
-#: woocommerce-payline.php:422
+#: woocommerce-payline.php:437
+#: woocommerce-payline.php:438
 msgid "Monext Logs Viewer"
 msgstr "Visionneur de logs Monext"
 
@@ -680,11 +645,11 @@ msgstr "Monext NX"
 msgid "Monext REC"
 msgstr "Monext REC"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:207
+#: includes/gateway/class-wc-gateway-payline-cpt.php:215
 msgid "Integration mode of the payment widget in the shop. Contact Monext support for more details"
 msgstr "Mode d'intégration du widget de paiement dans la boutique. Contacter le support Monext pour plus de détails"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:158
+#: includes/gateway/class-wc-gateway-payline-cpt.php:166
 msgid "In redirection mode, fill the code of payment page customization created in Monext Administration Center"
 msgstr "En mode redirection, remplissez le code de personnalisation de la page de paiement créé dans le Centre d'administration Monext."
 
@@ -733,57 +698,97 @@ msgstr "Messages d'erreur"
 msgid "Proxy setting"
 msgstr "Paramètres Proxy"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:551
+#: includes/gateway/class-wc-gateway-abstract-payline.php:376
 msgid "Payment method unavailable"
 msgstr "Methode de payment non disponible"
 
-#: includes/gateway/class-wc-gateway-abstract-payline.php:699
+#: includes/gateway/class-wc-gateway-abstract-payline.php:531
 msgid "An error occured, cannot retrieve payment amount."
 msgstr "Une erreur s'est produite : impossible de récupérer le montant du paiement."
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:265
-msgid " darker"
-msgstr ""
-
-#: includes/gateway/class-wc-gateway-payline-cpt.php:268
-msgid "No change"
-msgstr ""
-
 #: includes/gateway/class-wc-gateway-payline-cpt.php:273
+msgid " darker"
+msgstr " plus foncé"
+
+#: includes/gateway/class-wc-gateway-payline-cpt.php:276
+msgid "No change"
+msgstr "Pas de changement"
+
+#: includes/gateway/class-wc-gateway-payline-cpt.php:281
 msgid " lighter"
-msgstr ""
+msgstr " plus clair"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:277
+#: includes/gateway/class-wc-gateway-payline-cpt.php:285
 msgid "CTA hover"
-msgstr ""
+msgstr "Survol du bouton"
 
-#: woocommerce-payline.php:538
+#: woocommerce-payline.php:559
 msgid "Monext contract used"
 msgstr "Contrat Monext utilisé"
 
-#: includes/blocks/class-wc-blocs-abstract-payline.php:109
-msgid "Icon for "
-msgstr "Icône pour"
-
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:60
-#: includes/gateway/class-wc-gateway-payline-cpt.php:162
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:64
+#: includes/gateway/class-wc-gateway-payline-cpt.php:170
 msgid "Custom icon"
 msgstr "Icône personnalisée"
 
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:62
-#: includes/gateway/class-wc-gateway-payline-cpt.php:164
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:66
+#: includes/gateway/class-wc-gateway-payline-cpt.php:172
 msgid "Paste the direct link to your image hosted in the WordPress media library. Leave this field blank to use the default icon."
-msgstr "Collez le lien direct de votre image hébergée dans la bibliothèque des médias WordPress. Laissez ce champ vide pour utiliser l'icône par défaut."
+msgstr ""
+"Collez le lien direct de votre image hébergée dans la bibliothèque des médias WordPress. Laissez ce champ vide pour utiliser l'icône par défaut.\n"
+""
 
-#: woocommerce-payline.php:56
-#: woocommerce-payline.php:70
+#: woocommerce-payline.php:60
+#: woocommerce-payline.php:74
 msgid "The plugin is not installed correctly. You should have downloaded the package archive named woocommerce-payline_vx.y.z.zip from GitHub:"
 msgstr "Le plugin n'est pas correctement installé. Veuillez télécharger l'archive woocommerce-payline_vx.y.z.zip depuis GitHub :"
 
-#: includes/gateway/class-wc-gateway-payline-cpt.php:203
-msgid "PLEASE NOTE: The Monext integration only works in Redirect mode for WooCommerce versions earlier than 10.6 and the Block checkout type"
-msgstr "ATTENTION : l'intégration Monext ne fonctionne qu'en mode Redirection pour les WooCommerce < 10.6 et le checkout de type Block"
-
-#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:138
+#: includes/gateway/class-wc-gateway-abstract-recurring-payline.php:158
 msgid "PLEASE NOTE: Select only “card” payment methods."
 msgstr "ATTENTION : Choisissez exclusivement des moyens de paiement de type “Carte”."
+
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1332
+msgid "No contracts seems to be available with this point of sales"
+msgstr "Il semble qu'aucun contrat ne soit disponible dans ce point de vente."
+
+#: includes/gateway/class-wc-gateway-payline-cpt.php:211
+msgid "PLEASE NOTE: The Monext integration only works in Redirect mode for WooCommerce versions earlier than 10.6 and the Block checkout type"
+msgstr "REMARQUE : l'intégration Monext ne fonctionne qu'en mode « Redirection » pour les versions de WooCommerce antérieures à la version 10.6 et avec le type de paiement Block checkout"
+
+#: includes/blocks/class-wc-blocs-abstract-payline.php:109
+#, php-format
+msgid "Icon for %s payment gateway"
+msgstr "Icône de la passerelle de paiement %s"
+
+#. translators: %1$s: error code, %2$s: error detail
+#: includes/gateway/class-wc-gateway-abstract-payline.php:461
+#, php-format
+msgid "You can't be redirected to payment page (error code %1$s : %2$s). Please contact us."
+msgstr "Vous ne pouvez pas être redirigé vers la page de paiement (code d'erreur %1$s : %2$s). Veuillez nous contacter."
+
+#: includes/gateway/class-wc-gateway-abstract-payline.php:550
+#, php-format
+msgid "An error occured while displaying the payment form (error code %1$s : %2$s). Please contact us."
+msgstr "Une erreur s'est produite lors de l'affichage du formulaire de paiement (code d'erreur %1$s : %2$s). Veuillez nous contacter."
+
+#. translators: %1$s: received token, %2$s: expected token, %3$s: order ID
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1070
+#, php-format
+msgid "Token %1$s does not match expected %2$s for order %3$s"
+msgstr "Le token %1$s ne correspond pas à la valeur attendue %2$s pour la commande %3$s"
+
+#. translators: %1$s: error code, %2$s: error detail
+#: includes/gateway/class-wc-gateway-abstract-payline.php:1357
+#, php-format
+msgid "Unable to connect to Monext (code %1$s : %2$s)"
+msgstr "Impossible de se connecter à Monext (code %1$s : %2$s)"
+
+#: includes/gateway/class-wc-gateway-payline.php:106
+#, php-format
+msgid "Password used to call %1$s web services (available in the %2$s administration center)"
+msgstr "Mot de passe utilisé pour accéder aux services Web %1$s (disponible dans le centre d'administration %2$s)"
+
+#. Author URI of the plugin
+#: woocommerce-payline.php
+msgid "https://www.monext.fr"
+msgstr ""

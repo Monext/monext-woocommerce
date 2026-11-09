@@ -1,6 +1,7 @@
 <?php
 
-use Payline\PaylineSDK;
+use Payline\Api\MonextCompatClient as PaylineSDK;
+use Payline\Api\ApiInterface;
 
 /**
  * Tests unitaires pour WC_Abstract_Payline : Paiements avec SDK Monext
@@ -158,7 +159,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
                 'result' => array(
                     'code' => '99999',
                     'shortMessage' => 'TECHNICAL_ERROR',
-                    'longMessage' => 'An error occurred during payment processing',
+                    'detail' => 'An error occurred during payment processing',
                 ),
                 'redirectURL' => '',
                 'token' => '',
@@ -186,7 +187,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
                 'result' => array(
                     'code' => '99999',
                     'shortMessage' => 'ERROR',
-                    'longMessage' => 'XXXX'),
+                    'detail' => 'XXXX'),
                 'redirectURL' => '',
                 'token' => '',
             ));
@@ -258,9 +259,9 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
             ->with($this->callback(function ($params) {
                 // Vérifier les sections principales
                 $hasPayment = isset($params['payment']) && isset($params['payment']['amount']);
-                $hasOrder = isset($params['order']) && isset($params['order']['ref']);
+                $hasOrder = isset($params['order']) && isset($params['order']['reference']);
                 $hasBuyer = isset($params['buyer']) && isset($params['buyer']['email']);
-                $hasURLs = isset($params['returnURL']) && isset($params['cancelURL']);
+                $hasURLs = isset($params['returnURL']) && isset($params['notificationURL']);
 
                 return $hasPayment && $hasOrder && $hasBuyer && $hasURLs;
             }))
@@ -290,7 +291,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
                 'result' => array(
                     'code' => '02304',
                     'shortMessage' => 'INVALID_DATA',
-                    'longMessage' => 'Invalid merchant credentials',
+                    'detail' => 'Invalid merchant credentials',
                 ),
                 'token' => '',
             ));
@@ -313,7 +314,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
                 'result' => array(
                     'code' => '99999',
                     'shortMessage' => 'ERROR',
-                    'longMessage' => 'XXXX'),
+                    'detail' => 'XXXX'),
                 'token' => '',
             ));
 
@@ -389,7 +390,7 @@ class WC_Abstract_Payline_SDK_Payment_Test extends PaylineTestCase
                 'result' => array(
                     'code' => '02531',
                     'shortMessage' => 'FAILED',
-                    'longMessage' => 'Refund amount exceeds original transaction amount',
+                    'detail' => 'Refund amount exceeds original transaction amount',
                 ),
                 'transaction' => array('id' => ''),
             ));

@@ -63,17 +63,17 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
         $this->assertEquals('error', $result->get_error_code(), 'Le code d\'erreur doit être "error"');
     }
 
-    public function test_process_refund_accepts_order_with_transaction_id()
-    {
-        // Ce test vérifie que la validation passe
-        // mais l'appel SDK échouera (credentials mock invalides)
-
-        $this->markTestIncomplete(
-            'process_refund() appelle paylineSDK()->doRefund() qui nécessite un mock SDK Monext complet. ' .
-            'La validation (can_refund_order) est testée séparément. ' .
-            'Pour tester le comportement complet avec succès/échec API, un mock du SDK sera nécessaire.'
-        );
-    }
+//    public function test_process_refund_accepts_order_with_transaction_id()
+//    {
+//        // Ce test vérifie que la validation passe
+//        // mais l'appel SDK échouera (credentials mock invalides)
+//
+//        $this->markTestIncomplete(
+//            'process_refund() appelle paylineSDK()->doRefund() qui nécessite un mock SDK Monext complet. ' .
+//            'La validation (can_refund_order) est testée séparément. ' .
+//            'Pour tester le comportement complet avec succès/échec API, un mock du SDK sera nécessaire.'
+//        );
+//    }
 
     // =========================================
     // paylineManageReturn() - Scénarios succès
@@ -91,15 +91,19 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
             'result' => array(
                 'code' => '00000',
                 'shortMessage' => 'ACCEPTED',
+                'title' => 'ACCEPTED',
             ),
             'transaction' => array('id' => 'TXN_SUCCESS'),
-            'card' => array(
-                'number' => '497010XXXXXXXX40',
-                'type' => 'CB',
-                'expirationDate' => '1225',
-            ),
-            'payment' => array(
-                'contractNumber' => 'CONTRACT123',
+            'transactions' => array(
+                array(
+                    'id' => 'TXN_SUCCESS',
+                    'paymentInstrumentData' => array(
+                        'maskedNumber' => '497010XXXXXXXX40',
+                        'paymentInstrumentType' => array('code' => 'CB'),
+                        'expirationDate' => '1225',
+                    ),
+                    'paymentMethodId' => 'CONTRACT123',
+                ),
             ),
         );
 
@@ -125,6 +129,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
             'result' => array(
                 'code' => '04003',
                 'shortMessage' => 'FRAUD',
+                'title' => 'FRAUD',
             ),
             'transaction' => array('id' => 'TXN_FRAUD'),
             'card' => array(
@@ -161,6 +166,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
             'result' => array(
                 'code' => '02306',
                 'shortMessage' => 'PENDING',
+                'title' => 'PENDING',
             ),
             'transaction' => array('id' => 'TXN_PENDING'),
             'card' => array(),
@@ -186,6 +192,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
             'result' => array(
                 'code' => '02533',
                 'shortMessage' => 'PENDING',
+                'title' => 'PENDING',
             ),
             'transaction' => array('id' => 'TXN_PENDING2'),
             'card' => array(),
@@ -213,6 +220,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
                 'code' => '01234',
                 'shortMessage' => 'REFUSED',
                 'longMessage' => 'Insufficient funds',
+                'title' => 'REFUSED',
             ),
             'transaction' => array('id' => 'TXN_REFUSED'),
             'card' => array(),
@@ -236,6 +244,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
                 'code' => '01235',
                 'shortMessage' => 'CANCELLED',
                 'longMessage' => 'User cancelled',
+                'title' => 'CANCELLED',
             ),
             'transaction' => array('id' => 'TXN_CANCEL'),
             'card' => array(),
@@ -259,6 +268,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
                 'code' => '09999',
                 'shortMessage' => 'ERROR',
                 'longMessage' => 'Technical error',
+                'title' => 'ERROR',
             ),
             'transaction' => array('id' => 'TXN_ERROR'),
             'card' => array(),
@@ -285,15 +295,19 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
             'result' => array(
                 'code' => '00000',
                 'shortMessage' => 'ACCEPTED',
+                'title' => 'ACCEPTED',
             ),
             'transaction' => array('id' => 'TXN_TEST'),
-            'card' => array(
-                'number' => '497010XXXXXXXX40',
-                'type' => 'CB',
-                'expirationDate' => '1225',
-            ),
-            'payment' => array(
-                'contractNumber' => 'CONTRACT123',
+            'transactions' => array(
+                array(
+                    'id' => 'TXN_TEST',
+                    'paymentInstrumentData' => array(
+                        'maskedNumber' => '497010XXXXXXXX40',
+                        'paymentInstrumentType' => array('code' => 'CB'),
+                        'expirationDate' => '1225',
+                    ),
+                    'paymentMethodId' => 'CONTRACT123',
+                ),
             ),
         );
 
@@ -314,6 +328,7 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
             'result' => array(
                 'code' => '01234',
                 'shortMessage' => 'REFUSED',
+                'title' => 'REFUSED',
             ),
             'transaction' => array('id' => ''),
             'card' => array(),
@@ -336,15 +351,19 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
             'result' => array(
                 'code' => '00000',
                 'shortMessage' => 'ACCEPTED',
+                'title' => 'ACCEPTED',
             ),
             'transaction' => array('id' => 'TXN_OK'),
-            'card' => array(
-                'number' => '497010XXXXXXXX40',
-                'type' => 'CB',
-                'expirationDate' => '1225',
-            ),
-            'payment' => array(
-                'contractNumber' => 'CONTRACT123',
+            'transactions' => array(
+                array(
+                    'id' => 'TXN_OK',
+                    'paymentInstrumentData' => array(
+                        'maskedNumber' => '497010XXXXXXXX40',
+                        'paymentInstrumentType' => array('code' => 'CB'),
+                        'expirationDate' => '1225',
+                    ),
+                    'paymentMethodId' => 'CONTRACT123',
+                ),
             ),
         );
 

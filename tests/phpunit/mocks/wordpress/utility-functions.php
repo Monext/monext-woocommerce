@@ -53,3 +53,9 @@ if (!function_exists('get_plugin_data')) {
         return MockPlugins::$data['payline'];
     }
 }
+
+if (!function_exists('is_wp_error')) {
+    function is_wp_error($thing) {
+        return is_object($thing) && ($thing instanceof WP_Error);
+    }
+}

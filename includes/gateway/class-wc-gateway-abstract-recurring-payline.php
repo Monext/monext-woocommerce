@@ -1,6 +1,6 @@
 <?php
 
-use Payline\PaylineSDK;
+use Payline\Api\ApiInterface as PaylineSDK;
 
 /**
  * Payline module for WooCommerce
@@ -33,7 +33,9 @@ abstract class WC_Abstract_Recurring_Payline_NX extends WC_Abstract_Payline {
         $this->form_fields['enabled'] = array(
             'title' => __('Status', 'payline'),
             'type' => 'checkbox',
-            'label' => sprintf(__('Enable %s', 'payline'), $this->defaultName),
+            'label' => sprintf(
+                /* translators: %s: payment gateway name */
+                __('Enable %s', 'payline'), $this->defaultName),
             'default' => 'no'
         );
 
@@ -53,7 +55,9 @@ abstract class WC_Abstract_Recurring_Payline_NX extends WC_Abstract_Payline {
             'title' => __( 'Description', 'payline' ),
             'type' => 'textarea',
             'description' => __( 'This controls the description which the user sees during checkout.', 'payline' ),
-            'default' => sprintf(__('You will be redirected on %s secured pages at the end of your order.', 'payline'), 'Payline')
+            'default' => sprintf(
+                /* translators: %s: payment service name */
+                __('You will be redirected on %s secured pages at the end of your order.', 'payline'), 'Payline')
         );
 
         $this->form_fields['custom_icon'] = array(
@@ -97,6 +101,22 @@ abstract class WC_Abstract_Recurring_Payline_NX extends WC_Abstract_Payline {
         return !empty($cyclesDays[$code]) ? $cyclesDays[$code] : 0;
     }
 
+    protected function getFrequencyForRecurringPayments($code)
+    {
+        $frequencies = array(
+            '10' => 'DAILY',
+            '20' => 'WEEKLY',
+            '30' => 'BIMONTHLY',
+            '40' => 'MONTHLY',
+            '50' => 'FORTNITHLY',
+            '60' => 'QUARTERLY',
+            '70' => 'SEMIANNUALLY',
+            '80' => 'YEARLY',
+            '90' => 'BIENNIALLY'
+        );
+
+        return !empty($frequencies[$code]) ? $frequencies[$code] : 'MONTHLY';
+    }
 
     /**
      * @param WC_Order $order

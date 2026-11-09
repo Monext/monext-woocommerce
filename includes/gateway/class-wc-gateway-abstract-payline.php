@@ -3,10 +3,7 @@
 use Automattic\WooCommerce\StoreApi\Utilities\OrderController;
 use Automattic\WooCommerce\Blocks\Domain\Services\DraftOrders;
 use Automattic\WooCommerce\Enums\OrderInternalStatus;
-use Monolog\Logger;
-use Payline\PaylineSDK;
-use Automattic\WooCommerce\Utilities\LoggingUtil;
-
+use Payline\Api\ApiInterface as PaylineSDK;
 
 abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
@@ -21,7 +18,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
      * https://docs.payline.com/display/DT/Codes+-+Title
      * @var string
      */
-    const DEFAULT_USER_TITLE = '4'; // M. / Monsieur
+    const DEFAULT_USER_TITLE = 'MR'; // M. / Monsieur
 
     /** @var Payline\PaylineSDK $SDK */
     protected $SDK;
@@ -43,195 +40,14 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
     protected $debug = false;
 
-    var $_currencies = array(
-        'EUR' => '978', // Euro
-        'AFN' => '971', // Afghani
-        'ALL' => '8', // Lek
-        'DZD' => '12', // Algerian Dinar
-        'USD' => '840', // US Dollar
-        'AOA' => '973', // Kwanza
-        'XCD' => '951', // East Caribbean Dollar
-        'ARS' => '32', // Argentine Peso
-        'AMD' => '51', // Armenian Dram
-        'AWG' => '533', // Aruban Guilder
-        'AUD' => '36', // Australian Dollar
-        'AZN' => '944', // Azerbaijanian Manat
-        'BSD' => '44', // Bahamian Dollar
-        'BHD' => '48', // Bahraini Dinar
-        'BDT' => '50', // Taka
-        'BBD' => '52', // Barbados Dollar
-        'BYR' => '974', // Belarussian Ruble
-        'BZD' => '84', // Belize Dollar
-        'XOF' => '952', // CFA Franc BCEAO �
-        'BMD' => '60', // Bermudian Dollar (customarily known as Bermuda Dollar)
-        'INR' => '356', // Indian Rupee
-        'BTN' => '64', // Ngultrum
-        'BOB' => '68', // Boliviano
-        'BOV' => '984', // Mvdol
-        'BAM' => '977', // Convertible Marks
-        'BWP' => '72', // Pula
-        'NOK' => '578', // Norwegian Krone
-        'BRL' => '986', // Brazilian Real
-        'BND' => '96', // Brunei Dollar
-        'BGN' => '975', // Bulgarian Lev
-        'BIF' => '108', // Burundi Franc
-        'KHR' => '116', // Riel
-        'XAF' => '950', // CFA Franc BEAC �
-        'CAD' => '124', // Canadian Dollar
-        'CVE' => '132', // Cape Verde Escudo
-        'KYD' => '136', // Cayman Islands Dollar
-        'CLP' => '152', // Chilean Peso
-        'CLF' => '990', // Unidades de formento
-        'CNY' => '156', // Yuan Renminbi
-        'COP' => '170', // Colombian Peso
-        'COU' => '970', // Unidad de Valor Real
-        'KMF' => '174', // Comoro Franc
-        'CDF' => '976', // Franc Congolais
-        'NZD' => '554', // New Zealand Dollar
-        'CRC' => '188', // Costa Rican Colon
-        'HRK' => '191', // Croatian Kuna
-        'CUP' => '192', // Cuban Peso
-        'CYP' => '196', // Cyprus Pound
-        'CZK' => '203', // Czech Koruna
-        'DKK' => '208', // Danish Krone
-        'DJF' => '262', // Djibouti Franc
-        'DOP' => '214', // Dominican Peso
-        'EGP' => '818', // Egyptian Pound
-        'SVC' => '222', // El Salvador Colon
-        'ERN' => '232', // Nakfa
-        'EEK' => '233', // Kroon
-        'ETB' => '230', // Ethiopian Birr
-        'FKP' => '238', // Falkland Islands Pound
-        'FJD' => '242', // Fiji Dollar
-        'XPF' => '953', // CFP Franc
-        'GMD' => '270', // Dalasi
-        'GEL' => '981', // Lari
-        'GHC' => '288', // Cedi
-        'GIP' => '292', // Gibraltar Pound
-        'GTQ' => '320', // Quetzal
-        'GNF' => '324', // Guinea Franc
-        'GWP' => '624', // Guinea-Bissau Peso
-        'GYD' => '328', // Guyana Dollar
-        'HTG' => '332', // Gourde
-        'HNL' => '340', // Lempira
-        'HKD' => '344', // Hong Kong Dollar
-        'HUF' => '348', // Forint
-        'ISK' => '352', // Iceland Krona
-        'IDR' => '360', // Rupiah
-        'XDR' => '960', // SDR
-        'IRR' => '364', // Iranian Rial
-        'IQD' => '368', // Iraqi Dinar
-        'ILS' => '376', // New Israeli Sheqel
-        'JMD' => '388', // Jamaican Dollar
-        'JPY' => '392', // Yen
-        'JOD' => '400', // Jordanian Dinar
-        'KZT' => '398', // Tenge
-        'KES' => '404', // Kenyan Shilling
-        'KPW' => '408', // North Korean Won
-        'KRW' => '410', // Won
-        'KWD' => '414', // Kuwaiti Dinar
-        'KGS' => '417', // Som
-        'LAK' => '418', // Kip
-        'LVL' => '428', // Latvian Lats
-        'LBP' => '422', // Lebanese Pound
-        'ZAR' => '710', // Rand
-        'LSL' => '426', // Loti
-        'LRD' => '430', // Liberian Dollar
-        'LYD' => '434', // Libyan Dinar
-        'CHF' => '756', // Swiss Franc
-        'LTL' => '440', // Lithuanian Litas
-        'MOP' => '446', // Pataca
-        'MKD' => '807', // Denar
-        'MGA' => '969', // Malagascy Ariary
-        'MWK' => '454', // Kwacha
-        'MYR' => '458', // Malaysian Ringgit
-        'MVR' => '462', // Rufiyaa
-        'MTL' => '470', // Maltese Lira
-        'MRO' => '478', // Ouguiya
-        'MUR' => '480', // Mauritius Rupee
-        'MXN' => '484', // Mexican Peso
-        'MXV' => '979', // Mexican Unidad de Inversion (UID)
-        'MDL' => '498', // Moldovan Leu
-        'MNT' => '496', // Tugrik
-        'MAD' => '504', // Moroccan Dirham
-        'MZN' => '943', // Metical
-        'MMK' => '104', // Kyat
-        'NAD' => '516', // Namibian Dollar
-        'NPR' => '524', // Nepalese Rupee
-        'ANG' => '532', // Netherlands Antillian Guilder
-        'NIO' => '558', // Cordoba Oro
-        'NGN' => '566', // Naira
-        'OMR' => '512', // Rial Omani
-        'PKR' => '586', // Pakistan Rupee
-        'PAB' => '590', // Balboa
-        'PGK' => '598', // Kina
-        'PYG' => '600', // Guarani
-        'PEN' => '604', // Nuevo Sol
-        'PHP' => '608', // Philippine Peso
-        'PLN' => '985', // Zloty
-        'QAR' => '634', // Qatari Rial
-        'ROL' => '642', // Old Leu
-        'RON' => '946', // New Leu
-        'RUB' => '643', // Russian Ruble
-        'RWF' => '646', // Rwanda Franc
-        'SHP' => '654', // Saint Helena Pound
-        'WST' => '882', // Tala
-        'STD' => '678', // Dobra
-        'SAR' => '682', // Saudi Riyal
-        'RSD' => '941', // Serbian Dinar
-        'SCR' => '690', // Seychelles Rupee
-        'SLL' => '694', // Leone
-        'SGD' => '702', // Singapore Dollar
-        'SKK' => '703', // Slovak Koruna
-        'SIT' => '705', // Tolar
-        'SBD' => '90', // Solomon Islands Dollar
-        'SOS' => '706', // Somali Shilling
-        'LKR' => '144', // Sri Lanka Rupee
-        'SDG' => '938', // Sudanese Dinar
-        'SRD' => '968', // Surinam Dollar
-        'SZL' => '748', // Lilangeni
-        'SEK' => '752', // Swedish Krona
-        'CHW' => '948', // WIR Franc
-        'CHE' => '947', // WIR Euro
-        'SYP' => '760', // Syrian Pound
-        'TWD' => '901', // New Taiwan Dollar
-        'TJS' => '972', // Somoni
-        'TZS' => '834', // Tanzanian Shilling
-        'THB' => '764', // Baht
-        'TOP' => '776', // Pa'anga
-        'TTD' => '780', // Trinidad and Tobago Dollar
-        'TND' => '788', // Tunisian Dinar
-        'TRY' => '949', // New Turkish Lira
-        'TMM' => '795', // Manat
-        'UGX' => '800', // Uganda Shilling
-        'UAH' => '980', // Hryvnia
-        'AED' => '784', // UAE Dirham
-        'GBP' => '826', // Pound Sterling
-        'USS' => '998', // (Same day)
-        'USN' => '997', // (Next day)
-        'UYU' => '858', // Peso Uruguayo
-        'UYI' => '940', // Uruguay Peso en Unidades Indexadas
-        'UZS' => '860', // Uzbekistan Sum
-        'VUV' => '548', // Vatu
-        'VEB' => '862', // Bolivar
-        'VND' => '704', // Dong
-        'YER' => '886', // Yemeni Rial
-        'ZMK' => '894', // Kwacha
-        'ZWD' => '716', // Zimbabwe Dollar
-        'XAU' => '959', // Gold
-        'XBA' => '955', // Bond Markets Units European Composite Unit (EURCO)
-        'XBB' => '956', // European Monetary Unit (E.M.U.-6)
-        'XBC' => '957', // European Unit of Account 9(E.U.A.-9)
-        'XBD' => '958', // European Unit of Account 17(E.U.A.-17)
-        'XPD' => '964', // Palladium
-        'XPT' => '962', // Platinum
-        'XAG' => '961', // Silver
-        'XTS' => '963', // Codes specifically reserved for testing purposes
-        'XXX' => '999', // The codes assigned for transactions where no currency is involved
-    );
-
     protected $testmode;
     protected $debugEnable;
+
+    protected $paymentTypes = [
+        "CPT" => "ONE_OFF",
+        "NX" => "MX_INSTALLMENT",
+        "REC" => "MX_RECURRING",
+    ];
 
     public function __construct() {
 
@@ -273,6 +89,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
     protected function paylineSDK() {
         if(empty($this->SDK)) {
+//            $this->SDK = $this->paylineSDK->getSDK($this->id);
             $this->SDK = WC_Payline_SDK::getSDK($this->id);
         }
 
@@ -293,7 +110,8 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
      * @return bool
      */
     protected function paylineOnHoldPartnerWebPaymentDetails(WC_Order $order, array $res) {
-        return !empty($res['result']['shortMessage']) && $res['result']['shortMessage'] == 'ONHOLD_PARTNER';
+//        return !empty($res['result']['shortMessage']) && $res['result']['shortMessage'] == 'ONHOLD_PARTNER';
+        return !empty($res['result']['title']) && $res['result']['title'] == 'ONHOLD_PARTNER';
     }
 
     /**
@@ -442,7 +260,9 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
     function is_available()
     {
         $is_available = parent::is_available();
-        if ($is_available && !empty($this->settings['primary_contracts'])) {
+        //Added to prevent an unknow pointOfSaleReference in sessioncreate
+        $posExist = array_key_exists($this->settings['pos'],unserialize(get_option('woocommerce_payline_pos_list')));
+        if ($is_available && !empty($this->settings['primary_contracts']) && $posExist) {
             return true;
         }
         return false;
@@ -553,7 +373,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
                 echo $this->getPaylineWidget($order_id, $match);
                 echo '<script>Payline.Api.init();</script>';
             } else {
-                echo __('Payment method unavailable');
+                echo esc_html__('Payment method unavailable', 'payline');
             }
         }
     }
@@ -634,10 +454,11 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             return $result['redirectURL'];
         } else {
             $errorCode = $result['result']['code'];
-            $errorMsg  = $result['result']['longMessage'];
+            $errorMsg  = $result['result']['detail'];
         }
 
-        $message = sprintf( __( 'You can\'t be redirected to payment page (error code %s : %s). Please contact us.', 'payline' ),  $errorCode, $errorMsg);
+        /* translators: %1$s: error code, %2$s: error detail */
+        $message = sprintf( __( 'You can\'t be redirected to payment page (error code %1$s : %2$s). Please contact us.', 'payline' ),  $errorCode, $errorMsg);
 		return $this->get_error_payment_url($order, $message);
 	}
 
@@ -724,9 +545,10 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         } else {
             new WP_Error(
                 'error',
+                /* translators: %1$s: error code, %2$s: error detail */
                 sprintf(
-                    __('An error occured while displaying the payment form (error code %s : %s). Please contact us.', 'payline'),
-                    $result['result']['code'], $result['result']['longMessage']
+                    __('An error occured while displaying the payment form (error code %1$s : %2$s). Please contact us.', 'payline'),
+                    $result['result']['code'], $result['result']['detail']
                 )
             );
             return null;
@@ -779,139 +601,106 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
     protected function getWebPaymentRequest(WC_Order $order)
     {
         (new OrderController())->update_order_from_cart($order);
-        
+
         $doWebPaymentRequest = array();
-        $doWebPaymentRequest['version'] = $this->APIVersion;
-        $doWebPaymentRequest['payment']['amount'] = round($order->get_total() * 100);
-        $doWebPaymentRequest['payment']['currency'] = $this->_currencies[$order->get_currency()];
-        $doWebPaymentRequest['payment']['action'] = (isset($this->settings['payment_action']))? $this->settings['payment_action'] : '101';
-        $doWebPaymentRequest['payment']['mode'] = $this->paymentMode;
 
-        if (empty($this->settings['primary_contracts'])) {
-            return [];
-        } else {
-            $mainContract = reset($this->settings['primary_contracts']);
-        }
-        $doWebPaymentRequest['payment']['contractNumber'] = $mainContract;
+        $doWebPaymentRequest['pointOfSaleReference'] = $this->settings['pos'];
 
-        // ORDER
+        $doWebPaymentRequest['paymentMethod'] = [
+            "paymentMethodIDs" => $this->settings['primary_contracts'],
+        ];
 
-        $doWebPaymentRequest['order']['ref'] = $this->cleanSubstr($order->get_id(), 0, 50);
-        $doWebPaymentRequest['order']['country'] = $order->get_billing_country();
-        $doWebPaymentRequest['order']['taxes'] = round(($order->get_total_tax() - $order->get_shipping_tax()) * 100);
-        $doWebPaymentRequest['order']['amount'] = $doWebPaymentRequest['payment']['amount'];
-        $doWebPaymentRequest['order']['date'] = date(self::PAYLINE_DATE_FORMAT);
-        $doWebPaymentRequest['order']['currency'] = $doWebPaymentRequest['payment']['currency'];
-        $doWebPaymentRequest['order']['deliveryCharge'] = round(($order->get_shipping_total() + $order->get_shipping_tax()) * 100);
-        $doWebPaymentRequest['order']['deliveryMode'] = 1;
-
-        // BUYER
-        $doWebPaymentRequest['buyer']['title'] = self::DEFAULT_USER_TITLE ;
-
-        $doWebPaymentRequest['buyer']['lastName'] = $this->cleanSubstr($order->get_billing_last_name(), 0, 100);
-        $doWebPaymentRequest['buyer']['firstName'] = $this->cleanSubstr($order->get_billing_first_name(), 0, 100);
-        $doWebPaymentRequest['buyer']['customerId'] = $order->get_user_id() ? $this->cleanSubstr($order->get_user_id(), 0, 50) : 0;
-        $billingEmail = !empty($order->get_billing_email()) ? $order->get_billing_email() : WC()->customer->get_billing_email();
-        $doWebPaymentRequest['buyer']['email'] = $this->cleanSubstr($billingEmail, 0, 150);
-        $doWebPaymentRequest['buyer']['ip'] = $_SERVER['REMOTE_ADDR'];
-        $doWebPaymentRequest['buyer']['mobilePhone'] = $this->cleanSubstr(preg_replace("/[^0-9.]/", '', $order->get_billing_phone()), 0, 15);
-        if(!empty($this->settings['wallet']) && $this->settings['wallet'] == 'yes' && is_user_logged_in() && $order->get_user_id() > 0){
-	        $doWebPaymentRequest['buyer']['walletId'] = $this->encryptWalletId($order->get_user_id());
-        }
-
-        // BILLING ADDRESS
-        $doWebPaymentRequest['billingAddress']['title'] = self::DEFAULT_USER_TITLE ;
-        $doWebPaymentRequest['billingAddress']['name'] = $order->get_billing_first_name() . " " . $order->get_billing_last_name();
-        if ($order->get_billing_company() != null && strlen($order->get_billing_company()) > 0) {
-            $doWebPaymentRequest['billingAddress']['name'] .= ' (' . $order->get_billing_company() . ')';
-        }
-        $doWebPaymentRequest['billingAddress']['name'] = $this->cleanSubstr($doWebPaymentRequest['billingAddress']['name'], 0, 100);
-        $doWebPaymentRequest['billingAddress']['firstName'] = $this->cleanSubstr($order->get_billing_first_name(), 0, 100);
-        $doWebPaymentRequest['billingAddress']['lastName'] = $this->cleanSubstr($order->get_billing_last_name(), 0, 100);
-        $doWebPaymentRequest['billingAddress']['street1'] = $this->cleanSubstr($order->get_billing_address_1(), 0, 100);
-        $doWebPaymentRequest['billingAddress']['street2'] = $this->cleanSubstr($order->get_billing_address_2(), 0, 100);
-        $doWebPaymentRequest['billingAddress']['cityName'] = $this->cleanSubstr($order->get_billing_city(), 0, 40);
-        $doWebPaymentRequest['billingAddress']['zipCode'] = $this->cleanSubstr($order->get_billing_postcode(), 0, 20);
-        $doWebPaymentRequest['billingAddress']['country'] = $order->get_billing_country();
-        $doWebPaymentRequest['billingAddress']['phoneType'] = 1;
-        $doWebPaymentRequest['billingAddress']['phone'] = $this->cleanSubstr(preg_replace("/[^0-9.]/", '', $order->get_billing_phone()), 0, 15);
-
-        // SHIPPING ADDRESS
-        $doWebPaymentRequest['shippingAddress']['name'] = $order->get_shipping_first_name() . " " . $order->get_shipping_last_name();
-        if ($order->get_shipping_company() != null && strlen($order->get_shipping_company()) > 0) {
-            $doWebPaymentRequest['shippingAddress']['name'] .= ' (' . $order->get_shipping_company() . ')';
-        }
-
-        $doWebPaymentRequest['shippingAddress']['name'] = $this->cleanSubstr($doWebPaymentRequest['shippingAddress']['name'], 0, 100);
-        $doWebPaymentRequest['shippingAddress']['firstName'] = $this->cleanSubstr($order->get_shipping_first_name()?: $order->get_billing_first_name(), 0, 100);
-        $doWebPaymentRequest['shippingAddress']['lastName'] = $this->cleanSubstr($order->get_shipping_last_name()?: $order->get_billing_last_name(), 0, 100);
-        $doWebPaymentRequest['shippingAddress']['street1'] = $this->cleanSubstr($order->get_shipping_address_1()?: $order->get_billing_address_1(), 0, 100);
-        $doWebPaymentRequest['shippingAddress']['street2'] = $this->cleanSubstr($order->get_shipping_address_2()?: $order->get_billing_address_2(), 0, 100);
-        $doWebPaymentRequest['shippingAddress']['cityName'] = $this->cleanSubstr($order->get_shipping_city()?: $order->get_billing_city(), 0, 40);
-        $doWebPaymentRequest['shippingAddress']['zipCode'] = $this->cleanSubstr($order->get_shipping_postcode()?: $order->get_billing_postcode(), 0, 20);
-        $doWebPaymentRequest['shippingAddress']['country'] = $order->get_shipping_country()?: $order->get_billing_country();
-        $doWebPaymentRequest['shippingAddress']['phone'] = $this->cleanSubstr(preg_replace("/[^0-9.]/", '', $order->get_shipping_phone()), 0, 15);
-	    $doWebPaymentRequest['shippingAddress']['phoneType'] = 1;
-
-        $totalOrderLines = 0;
-        // ORDER DETAILS
+        $itemsArray = [];
         $items = $order->get_items();
         /** @var WC_Order_Item_Product $item */
-	    foreach ($items as $item) {
+        foreach ($items as $item) {
             $orderLine = array(
-                'ref' => $this->cleanSubstr($item['name'], 0, 50),
+                'reference' => $this->cleanSubstr($item['name'], 0, 50),
                 'price' => round(round(($item->get_subtotal() + $item->get_subtotal_tax())/$item['qty'],2) * 100),
                 'quantity' => (int)$item['qty'],
                 'comment' => (string)$item['name'],
                 'taxRate' => ($item['total'] > 0)?round(($item['total_tax'] / $item['total']) * 100 * 100): 0
             );
-            $this->paylineSDK()->addOrderDetail($orderLine);
-
-            $totalOrderLines+=$orderLine['price'] * $orderLine['quantity'];
+            $itemsArray[]=$orderLine;
         }
 
-        //Allow Klarna with cart discount
-        //Round $adjustment to avoid php biais as 4.5474735088646E-13 ( https://github.com/Monext/monext-woocommerce/issues/5 )
-        $adjustment = round($doWebPaymentRequest['order']['amount'] - $totalOrderLines - $doWebPaymentRequest['order']['deliveryCharge']);
-        if ($adjustment) {
-            $prixHT = ($order->get_total() - $order->get_total_tax() - $order->get_shipping_total());
-            $taxRate = ($prixHT > 0) ? round(($order->get_cart_tax() / $prixHT) * 100 * 100) : 0;
+        $doWebPaymentRequest['order'] = [
+            "reference" => $this->cleanSubstr($order->get_id(), 0, 50),
+            "amount" => round($order->get_total() * 100),
+            "taxes" => round(($order->get_total_tax() - $order->get_shipping_tax()) * 100),
+            "currency" => $order->get_currency(),
+            "date" => date(DateTime::ATOM),
+            "country" => $order->get_billing_country(),
+            "items" => $itemsArray,
+        ];
 
-		    $this->paylineSDK()->addOrderDetail(array(
-			    'ref' => 'CART_DISCOUNT',
-			    'price' => $adjustment,
-			    'quantity' => 1,
-			    'comment' => 'Cart amount adjustment',
-			    'category' =>  'main',
-			    'taxRate' => $taxRate
-		    ));
-	    }
+        $capture = (!empty($this->settings['payment_action']) && $this->settings['payment_action'] == '101') ? 'AUTOMATIC' : 'MANUAL';
+        $paymentType = $this->paymentTypes[$this->paymentMode];
 
-        $this->paylineSDK()->addPrivateData(array('key' => 'OrderSaleChannel', 'value' => 'DESKTOP'));
-        if($this->settings['smartdisplay_parameter'] != null){
-            $this->paylineSDK()->addPrivateData(array('key' => 'display.rule.param', 'value' => $this->settings['smartdisplay_parameter']));
+        $doWebPaymentRequest['payment'] = [
+            "paymentType" => $paymentType,
+            "capture" => $capture,
+            "amount" => $doWebPaymentRequest['order']['amount'],
+        ];
+
+        $billingEmail = !empty($order->get_billing_email()) ? $order->get_billing_email() : WC()->customer->get_billing_email();
+        $billingPhone = $this->cleanSubstr(preg_replace("/[^0-9.]/", '', $order->get_billing_phone()), 0, 15);
+        $doWebPaymentRequest['buyer'] = [
+            "id" => (string)$order->get_user_id(),
+            "title" => self::DEFAULT_USER_TITLE,
+            "firstName" => $this->cleanSubstr($order->get_billing_first_name(), 0, 100),
+            "lastName" => $this->cleanSubstr($order->get_billing_last_name(), 0, 100),
+            "email" => $this->cleanSubstr($billingEmail, 0, 150),
+            "mobile" => $billingPhone,
+            "billingAddress" => [
+//                "title" => self::DEFAULT_USER_TITLE,
+                "firstName" =>$this->cleanSubstr($order->get_billing_first_name(), 0, 100),
+                "lastName" => $this->cleanSubstr($order->get_billing_last_name(), 0, 100),
+                "mobile" => $billingPhone,
+                "label" => $order->get_billing_first_name() . " " . $order->get_billing_last_name(),
+                "street" => $this->cleanSubstr($order->get_billing_address_1(), 0, 100),
+                "complement" => $this->cleanSubstr($order->get_billing_address_2(), 0, 100),
+                "city" => $this->cleanSubstr($order->get_billing_city(), 0, 40),
+                "zip" => $this->cleanSubstr($order->get_billing_postcode(), 0, 20),
+                "country" => $order->get_billing_country(),
+            ],
+        ];
+
+        $doWebPaymentRequest['delivery'] = [
+            "charge" => round(($order->get_shipping_total() + $order->get_shipping_tax()) * 100),
+            "address" => [
+//                "title" => self::DEFAULT_USER_TITLE,
+                "firstName" =>$this->cleanSubstr($order->get_shipping_first_name(), 0, 100),
+                "lastName" => $this->cleanSubstr($order->get_shipping_last_name(), 0, 100),
+                "mobile" => $this->cleanSubstr(preg_replace("/[^0-9.]/", '', $order->get_shipping_phone()), 0, 15),
+                "label" => $order->get_shipping_first_name() . " " . $order->get_shipping_last_name(),
+                "street" => $this->cleanSubstr($order->get_shipping_address_1(), 0, 100),
+                "complement" => $this->cleanSubstr($order->get_shipping_address_2(), 0, 100),
+                "city" => $this->cleanSubstr($order->get_shipping_city(), 0, 40),
+                "zip" => $this->cleanSubstr($order->get_shipping_postcode(), 0, 20),
+                "country" => $order->get_billing_country(),
+            ],
+        ];
+
+        $doWebPaymentRequest['privateData'] = [
+            "OrderSaleChannel" => "DESKTOP"
+        ];
+
+        if(!empty($this->settings['smartdisplay_parameter'])) {
+            $doWebPaymentRequest['privateData']['display.rule.param'] = $this->settings['smartdisplay_parameter'];
         }
 
-        // TRANSACTION OPTIONS
-        $doWebPaymentRequest['notificationURL'] = $this->get_request_url('notification');
         $doWebPaymentRequest['returnURL'] = $this->get_request_url('return');
-        $doWebPaymentRequest['cancelURL'] = $this->get_request_url('cancel');
-
+        $doWebPaymentRequest['notificationURL'] = $this->get_request_url('notification');
         $doWebPaymentRequest['languageCode'] = $this->settings['language'];
         $doWebPaymentRequest['customPaymentPageCode'] = $this->settings['custom_page_code'];
 
-        // CONTRACTS
-        if(!empty($this->settings['primary_contracts'])) {
-            $doWebPaymentRequest['contracts'] = $this->settings['primary_contracts'];
-            $doWebPaymentRequest['secondContracts'] = $this->settings['primary_contracts'];
+        if($this->settings['wallet'] == 'yes' && is_user_logged_in() && $order->get_user_id() > 0){
+            $doWebPaymentRequest['mxWalletId'] = $this->encryptWalletId($order->get_user_id());
         }
 
-        // Callback payline_do_web_payment_request_params
-        $requestParams = apply_filters('payline_do_web_payment_request_params', $doWebPaymentRequest, $order);
-
-        return $requestParams;
+        return $doWebPaymentRequest;
     }
-
 
     protected function get_request_url($urlType = '') {
         return add_query_arg(array('wc-api' => get_class($this), 'url_type'=>$urlType), home_url('/'));
@@ -1113,7 +902,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         return '<div id="PaylineWidget"
                     data-user-connected="' . (is_user_logged_in() ? 'true' : 'false') . '"
                     data-token="'.$token.'"
-                    data-template="'.$template.'" 
+                    data-template="'.$template.'"
                     data-embeddedredirectionallowed="true"
                     data-event-didshowstate="eventDidshowstate"
                     data-event-beforepayment="beforePayement"
@@ -1122,12 +911,14 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
     }
 
     /**
+     * @param array $res
+     * @param string $message
      * @return void
+     * @throws WC_Data_Exception
      */
-    protected function payline_callback_cancel($message='') {
-
-	    $res = $this->paylineSDK()->getWebPaymentDetails(array('token'=>$_GET['paylinetoken'],'version'=>$this->APIVersion));
-	    $order = wc_get_order($res['order']['ref']);
+    protected function payline_callback_cancel($res, $message='') {
+        //Todo $res['order']['reference'] sera toujours vide
+	    $order = wc_get_order($res['order']['reference']);
         if(!$order) {
             wp_redirect(wc_get_cart_url());
             die();
@@ -1147,7 +938,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
 	    if ($transactionCanceled and !is_wp_error($transactionCanceled)) {
 		    $order->update_status('cancelled', $message);
-	        $noticeMessage = __( 'Payment was canceled.', 'payline' );
+            $noticeMessage = __( $this->settings['user_error_message_cancelled'], 'payline' );
         }else {
 	        $noticeMessage = __( 'Payment cannot be canceled now. Please contact us.', 'payline' );
         }
@@ -1166,10 +957,12 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
     }
 
     /**
+     * @param string $type
      * @return void
+     * @throws WC_Data_Exception
      */
-    protected function payline_callback_webhook() {
-
+    protected function payline_callback_webhook($type = 'webhook')
+    {
         if(empty($_GET['transactionId'])) {
             return false;
         }
@@ -1178,42 +971,53 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             //'orderRef'=>$_GET['orderRef'],
             'version'=>$this->APIVersion));
 
-        if(empty($res['order']['ref'])) {
+        if(empty($res['order']['reference'])) {
             return false;
         }
 
-        $order = wc_get_order($res['order']['ref']);
+        $order = wc_get_order($res['order']['reference']);
         if($order && $order->get_id()) {
             $this->paylineManageReturn($order, $res);
-            die('Success webhook');
+            die('Success '.$type);
         }
 
-        die('Error webhook');
+        die('Error '.$type);
     }
 
     /**
      *
      * @return void
+     * @throws WC_Data_Exception
      */
     function payline_callback() {
-        if(!isset($_GET['url_type']) || !in_array($_GET['url_type'], $this->urlTypes)) {
-            $this->payline_callback_cancel('Unknow url type.');
-            return;
-        }
+        //Todo:
+        // Si type webhook => payline_callback_webhook
+        // Si type cancel => payline_callback_cancel => revenir sur panier
+        // Si type notification =>
+        // .... if WEBTRS => continue
+        // .... elseif TRS/TRSWALLET => getTransactionDetails => paylineManageReturn
+        // Est ce que j'ai un token $_GET['paylinetoken'] ou $_GET['token']-
+        // .. Si pas de token je vais vers le panier
+        // Est ce que ce token est associer a une commande (serach via bdd lien token <=> commande)
+        // Quel est l'état du paiement GWPD
+        // .. Si type resetToken =>
+        // .. Si type else =>
+        // ....CANCELLED => Ne rien faire, la commande est toujours en pending
+        // ....REFUSED => Une commande doit exister sinon la créer et attacher la transaction (uniquement si on est pas sur une Notification) + revenir sur le panier
+        // ....ACCEPTED, INPROGRESS, ONHOLD_PARTNER, PENDING_RISK. => Une commande doit exister sinon la créer et attacher la transaction
 
-        $urlType = $_GET['url_type'];
-        if($urlType=='cancel'){
-            $this->payline_callback_cancel('Payment was canceled.');
-        }
+        //Todo SUITE
+        // Nouvel fonction pour getTransactionDetails de webhook et notif TRS/TRSWALLET
+
+        $urlType = (isset($_GET['url_type']))?$_GET['url_type']:null;
 
         if($urlType=='webhook'){
             $this->payline_callback_webhook();
         }
 
-        if(isset($_GET['order_id'])){
-            //Todo: See how to delete
-            $this->generate_payline_form($_GET['order_id']);
-            exit;
+        if($urlType=='notification' && in_array($_GET['notificationType'],['TRS', 'TRSWALLET'])){
+            $this->payline_callback_webhook('notification');
+            die();
         }
 
         $token = false;
@@ -1227,16 +1031,20 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             exit;
         }
 
-
-        $res = $this->paylineSDK()->getWebPaymentDetails(array('token'=>$token,'version'=>$this->APIVersion));
-        $this->debug($res, array(__METHOD__));
-
-        if($res['result']['code'] == PaylineSDK::ERR_CODE) {
-            $this->paylineSDK()->getLogger()->error('Unable to call Payline for token '.$token);
+        $result = $this->paylineSDK()->getWebPaymentDetails(array('token'=>$token,'version'=>$this->APIVersion));
+        $this->debug($result, array(__METHOD__));
+        if($result['result']['code'] == PaylineSDK::ERR_CODE) {
+            $this->paylineSDK()->getLogger()->error('Unable to call Payline for token ' . $token);
             wp_redirect(wc_get_cart_url());
             die();
-        } else {
-            $orderId = $res['order']['ref'];
+
+        }else{
+            if(isset($result['order'])){
+                $orderId = $result['order']['reference'];
+            }else{
+                $orderId = WC()->session->get('store_api_draft_order');
+            }
+            //Todo Pas fiable
             $order = wc_get_order($orderId);
             WC()->session->__unset('store_api_draft_order');
             if(!$order) {
@@ -1250,41 +1058,33 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
                 die();
             }
 
-            if($urlType=='notification') {
-                //Nothing to do on notification if a transaction already exists for payline CPT
-                $transactionId = $order->get_transaction_id();
-	            $paymentMethod = $order->get_payment_method();
-	            if ($transactionId && $paymentMethod == 'payline_cpt') {
-		            die();
-	            }
+            if(!isset($urlType) || !in_array($urlType, $this->urlTypes)){
+                $this->payline_callback_cancel($result, 'Unknow url type.');
+            }elseif($urlType=='cancel' || $result['result']['title'] == 'CANCELLED'){
+                $this->payline_callback_cancel($result, 'Payment was canceled.');
+            }else{
 
-	            if (!empty($paymentMethod) && $paymentMethod != 'payline_cpt'){
-		            die();
-	            }
+                $expectedToken = $this->getCachedDWPDataForOrder($order, 'token',false,false);//Todo: Voir comment reappliquer
+                if($expectedToken != $token){
+                    /* translators: %1$s: received token, %2$s: expected token, %3$s: order ID */
+                    $message = sprintf(__('Token %1$s does not match expected %2$s for order %3$s', 'payline'), wc_clean($token), $expectedToken, $orderId);
+                    $this->paylineSDK()->getLogger()->error($message);
+                    $order->add_order_note($message);
+                    wp_redirect(wc_get_cart_url());
+                    die($message);
+                }
+                $message = $this->paylineManageReturn($order, $result);
+
+                $redirectUrl = $this->get_return_url($order);
+                if(in_array($order->get_status(), array('failed', 'cancelled'))) {
+                    //Reset Old token on error
+                    $this->updateTokenForOrder($order, []);
+                    $redirectUrl = $this->get_error_payment_url($order, $message);
+                }
+
+                wp_redirect($redirectUrl);
+                die();
             }
-
-            $expectedToken = $this->getCachedDWPDataForOrder($order, 'token',false,false);
-            if($expectedToken != $token){
-                $message = sprintf(__('Token %s does not match expected %s for order %s', 'payline'), wc_clean($token), $expectedToken, $orderId);
-                $this->paylineSDK()->getLogger()->error($message);
-                $order->add_order_note($message);
-                wp_redirect(wc_get_cart_url());
-                die($message);
-            }
-
-            do_action( $this->id . '_payment_callback', $res, $order );
-
-            $message = $this->paylineManageReturn($order, $res);
-
-            $redirectUrl = $this->get_return_url($order);
-            if(in_array($order->get_status(), array('failed', 'cancelled'))) {
-                //Reset Old token on error
-                $this->updateTokenForOrder($order, []);
-                $redirectUrl = $this->get_error_payment_url($order, $message);
-            }
-
-            wp_redirect($redirectUrl);
-            die();
         }
     }
 
@@ -1325,7 +1125,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
                 }
             }
 
-            $status = strtolower($res['result']['shortMessage']);
+            $status = strtolower($res['result']['title']);
 	        if(in_array($status,['refused', 'cancelled', 'error'])) {
                 $settingKey = 'user_error_message_'.$status;
 		        $message = $this->settings[$settingKey];
@@ -1341,6 +1141,22 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         }
 
         return $message;
+    }
+
+    /**
+     * Todo: Pas sûr de la garder elle
+     * @param $order
+     * @param $result
+     * @return void
+     */
+    protected function updateOrderTransactionMetaData($order, $result)
+    {
+        if ($order->getId()) {
+            $order->update_meta_data('Transaction ID', $result['transaction']['id']);
+            $order->update_meta_data('Card number', $result['card']['number']);
+            $order->update_meta_data('Payment mean', $result['card']['type']);
+            $order->update_meta_data('Card expiry', $result['card']['expirationDate']);
+        }
     }
 
     /**
@@ -1403,7 +1219,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
         $paymentParams = array();
         $paymentParams['amount'] = round($amount*100);
-        $paymentParams['currency'] = $this->_currencies[$order->get_currency()];
+        $paymentParams['currency'] = $order->get_currency();
         $paymentParams['action'] = 421;
         $paymentParams['mode'] =  $this->paymentMode;
         $paymentParams['contractNumber'] = $order->get_meta('_contract_number' ,true);
@@ -1419,11 +1235,12 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         $this->debug($res, array(__METHOD__));
         if($res['result']['code'] == '00000'){
             $order->add_order_note(
+                /* translators: %1$s: refund amount, %2$s: refund transaction ID */
                 sprintf( __( 'Refunded %1$s - Refund ID: %2$s', 'payline' ), $amount, $res['transaction']['id'] )
             );
             return true;
         } else {
-            return new WP_Error( 'error',$res['result']['longMessage'] );
+            return new WP_Error( 'error',$res['result']['detail'] );
         }
 
         return false;
@@ -1489,32 +1306,35 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
         if (!empty($woocommerce->session->payline_reset)){
             unset($woocommerce->session->payline_reset);
+            /* translators: %s: payment service name */
             $templateData['reset_message'] = sprintf(__( 'Your %s configuration parameters are reset.', 'payline'), 'Payline');
-        }
-
-        //--> Display errors messages
-        if (!extension_loaded('soap')) {
-            $this->callGetMerchantSettings = false;
-            $dispErrors[] = sprintf(__( 'The SOAP extension is not enabled in your PHP installation and is required', 'payline'));
         }
 
         if(array_key_exists('merchant_id', $this->settings) && ($this->settings['merchant_id'] == null || strlen($this->settings['merchant_id']) == 0)){
             $this->callGetMerchantSettings = false;
+            /* translators: %s: setting field name */
             $dispErrors[] = sprintf(__( '%s is mandatory', 'payline'), __('Merchant ID', 'payline' ));
         }
         if(array_key_exists('access_key', $this->settings) && ($this->settings['access_key'] == null || strlen($this->settings['access_key']) == 0)){
             $this->callGetMerchantSettings = false;
+            /* translators: %s: setting field name */
             $dispErrors[] = sprintf(__( '%s is mandatory', 'payline'), __('Access Key', 'payline' ));
+        }
+
+        if(!isset($this->settings['pos']) || empty($this->settings['pos'])){
+            $this->callGetMerchantSettings = false;
+            /* translators: %s: setting field name */
+            $dispErrors[] = sprintf(__( '%s is mandatory', 'payline'), __('Point of Sales', 'payline' ));
+        }
+
+        if(!empty(unserialize(get_option( 'woocommerce_payline_pos_list'))) && empty(unserialize(get_option('woocommerce_payline_pos_contracts_list')))){
+            $this->callGetMerchantSettings = false;
+            $dispErrors[] = __( 'No contracts seems to be available with this point of sales', 'payline');
         }
 
         if(array_key_exists('primary_contracts', $this->settings) && ($this->settings['primary_contracts'] == null || empty($this->settings['primary_contracts']))){
             $this->callGetMerchantSettings = false;
             $dispErrors[] = __( 'Please select at least one contract in contracts tab', 'payline');
-        }
-
-        if(!isset($this->settings['pos']) || empty($this->settings['pos'])){
-            $this->callGetMerchantSettings = false;
-            $dispErrors[] = sprintf(__( '%s is mandatory', 'payline'), __('Point of Sales', 'payline' ));
         }
 
         //--> Check setup with Monext
@@ -1526,12 +1346,15 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
                     $dispConfirm[] = __( 'You are in homologation mode, payments are simulated !', 'payline');
                 }
             }else{
-                if(strcmp(WC_Gateway_Payline_CPT::BAD_CONNECT_SETTINGS_ERR, $res['result']['longMessage']) == 0){
+                if(strcmp(WC_Gateway_Payline_CPT::BAD_CONNECT_SETTINGS_ERR, $res['result']['detail']) == 0){
+                    /* translators: %s: settings section name */
                     $this->disp_errors .= "<p>".sprintf(__( 'Unable to connect to Monext, check your %s', 'payline'), __('MONEXT GATEWAY ACCESS', 'payline' ))."</p>";
-                }elseif(strcmp(WC_Gateway_Payline_CPT::BAD_PROXY_SETTINGS_ERR, $res['result']['longMessage']) == 0){
+                }elseif(strcmp(WC_Gateway_Payline_CPT::BAD_PROXY_SETTINGS_ERR, $res['result']['detail']) == 0){
+                    /* translators: %s: settings section name */
                     $this->disp_errors .= "<p>".sprintf(__( 'Unable to connect to Monext, check your %s', 'payline'), __('PROXY SETTINGS', 'payline' ))."</p>";
                 }else{
-                    $dispErrors[] = "<p>".sprintf(__( 'Unable to connect to Monext (code %s : %s)', 'payline'), $res['result']['code'], $res['result']['longMessage']);
+                    /* translators: %1$s: error code, %2$s: error detail */
+                    $dispErrors[] = "<p>".sprintf(__( 'Unable to connect to Monext (code %1$s : %2$s)', 'payline'), $res['result']['code'], $res['result']['detail']);
                 }
             }
         }
@@ -1593,7 +1416,8 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             }
 
             $cleanStatusKey = str_replace( 'wc-', '', $statusKey );
-            $options[$cleanStatusKey]= sprintf(__('When order status is "%s"', 'payline'), __($status, 'woocommerce'));
+            /* translators: %s: order status name */
+            $options[$cleanStatusKey]= sprintf(__('When order status is "%s"', 'payline'), $status);
         }
         return $options;
     }
@@ -1620,6 +1444,9 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             return;
         }
 
+        # delay to fix issue raised in ticket #40105
+        usleep(500000);
+
         return $this->captureOrder($order);
     }
 
@@ -1632,9 +1459,10 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
         //Todo: When transaction table will be created, replace this API call by a database query
         $txDetailsRes = $this->paylineSDK()->getTransactionDetails(array('transactionId'=> $order->get_transaction_id(),'transactionHistory'=> 'Y'));
-        $associatedTransactions = $txDetailsRes['associatedTransactionsList']['associatedTransactions'];
+//        $associatedTransactions = $txDetailsRes['associatedTransactionsList']['associatedTransactions'];
+        $associatedTransactions = $txDetailsRes['associatedTransactions'];
         if(is_array(reset($associatedTransactions))) {
-            foreach ($txDetailsRes['associatedTransactionsList']['associatedTransactions'] as $transaction) {
+            foreach ($txDetailsRes['associatedTransactions'] as $transaction) {
                 if ($transaction['type'] == 'CAPTURE'){
                     return;
                 }
@@ -1643,7 +1471,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
 
         $paymentParams = array();
         $paymentParams['amount'] = round($order->get_total() * 100);
-        $paymentParams['currency'] = $this->_currencies[$order->get_currency()];
+        $paymentParams['currency'] = $order->get_currency();
         $paymentParams['action'] = 201;
         $paymentParams['mode'] =  $this->paymentMode;
 
@@ -1657,7 +1485,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
             return true;
         } else {
             $order->add_order_note(
-                sprintf( 'Capture error :"%1$s"', $res['result']['longMessage'] )
+                sprintf( 'Capture error :"%1$s"', $res['result']['detail'] )
             );
             return false;
         }
@@ -1723,6 +1551,7 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
     public function createManageWebWallet()
     {
         $contracts = [];
+        $currentPos         = $this->settings['pos'];
         $contractsList = $this->getContractsForCurrentPos();
         $walletId = $this->encryptWalletId(get_current_user_id());
         $customer = new WC_Customer( get_current_user_id() );
@@ -1734,20 +1563,19 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         }
 
         $params = array(
-            'version' => $this->APIVersion,
-            'contractNumber' => current($contracts),
-            'walletId' => $walletId,
-            'contracts' => $contracts,
+            "pointOfSaleReference" => $currentPos,
+            "paymentMethodIDs" => $contracts,
+            "mxWalletId" => $walletId,
             'buyer' => array(
-                'lastName' => $this->cleanSubstr($customer->get_last_name(), 0, 100),
+                'id' => $this->cleanSubstr($customer->get_id(), 0, 50),
                 'firstName' => $this->cleanSubstr($customer->get_first_name(), 0, 100),
+                'lastName' => $this->cleanSubstr($customer->get_last_name(), 0, 100),
+                'email' => $this->cleanSubstr($customer->get_email(), 0, 150),
                 'walletId' => $walletId,
             ),
-            'updatePersonalDetails' => 0,
-
-            'notificationURL' => $this->get_request_url('notification'),
+            'allowUpdatePersonalDetails' => 0,
             'returnURL' => $this->get_request_url('return'),
-            'cancelURL' => $this->get_request_url('cancel'),
+            'notificationURL' => $this->get_request_url('notification'),
         );
 
         return $this->paylineSDK()->manageWebWallet($params);
@@ -1761,45 +1589,29 @@ abstract class WC_Abstract_Payline extends WC_Payment_Gateway {
         return $contractsList;
     }
 
-    protected function getContractsByPosLabel($posLabel, $enabledContracts = array(), $useCache = false)
+    protected function getContractsByPosLabel($posLabel, $enabledContracts = array())
     {
-        $posList = WC_Payline_SDK::getPointOfSales();
-        foreach ($posList as $pos) {
-            if (trim($pos['label']) == $posLabel && isset($pos['contracts']) && is_array($pos['contracts']) && isset($pos['contracts']['contract']) && is_array($pos['contracts']['contract'])) {
-                // Retrieve contracts and sort them
-                $finalContractsList = array();
-                $disabledContracts = array();
-                $contractsList = $pos['contracts']['contract'];
+        $contractsList = WC_Payline_SDK::getPaymentMethods($posLabel);
 
-                $firstKey = key($contractsList);
-                if(!is_numeric($firstKey) && isset($contractsList['contractNumber'])) {
-                    $contractsList = [$contractsList];
-                }
-
-                // Assign "enabled attriburte
-                foreach ($contractsList as &$contract) {
-                    $contractId = $contract['cardType'] . '-' . $contract['contractNumber'];
-                    $contract['enabled'] = (in_array($contractId, $enabledContracts));
-                    $contract['wallet'] = (in_array($contract['cardType'], ['AMEX', 'CB']));
-                    if (!$contract['enabled']) {
-                        $disabledContracts[] = $contract;
-                    }
-                }
-                // Sort contracts, enabled first
-                foreach ($enabledContracts as $enabledContractId) {
-                    foreach ($contractsList as &$contract) {
-                        $contractId = $contract['cardType'] . '-' . $contract['contractNumber'];
-                        if ($contractId == $enabledContractId) {
-                            $finalContractsList[] = $contract;
-                            break;
-                        }
-                    }
-                }
-
-                $finalContractsList = array_merge($finalContractsList, $disabledContracts);
-
-                return $finalContractsList;
+        $paymentMethods = [];
+        if (!is_wp_error($contractsList) && isset($contractsList['paymentMethods'])) {
+            // REST method getPaymentMethods is not stablilized
+            if (isset($contractsList['paymentMethods'])) {
+                $paymentMethods = $contractsList['paymentMethods'];
+            } elseif (!empty($contractsList[0]["paymentInstrumentType"])) {
+                $paymentMethods = $contractsList;
             }
+
+            foreach ($paymentMethods as $contract) {
+                $posContracts[] = [
+                    "id" => $contract['paymentInstrumentType']['code'] . '-' . $contract['id'],
+                    "label" => $contract['name'],
+                    "contractNumber" => $contract['id'],
+                    "enabled" => (in_array($contract['name'], $enabledContracts)),
+                    "wallet" => (in_array($contract['paymentInstrumentType']['code'], ['AMEX', 'CB']))
+                ];
+            }
+            return $posContracts;
         }
 
         return array();

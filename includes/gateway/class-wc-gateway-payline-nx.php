@@ -1,6 +1,6 @@
 <?php
 
-use Payline\PaylineSDK;
+use Payline\Api\ApiInterface as PaylineSDK;
 
 /**
  * Payline module for WooCommerce
@@ -62,22 +62,18 @@ class WC_Gateway_Payline_NX extends WC_Abstract_Recurring_Payline_NX {
         if(empty($billingLeft) or $billingLeft<2) {
             $billingLeft = 2;
         }
-        $requestParams['recurring']['billingLeft'] = $billingLeft; // Nombre d’échéance
-
         $totalAmount = $requestParams['payment']['amount'];
         $recurringAmount = round(( $totalAmount / 100 ) / $billingLeft) * 100;
-
-        $requestParams['recurring']['firstAmount'] = round($totalAmount - ($recurringAmount * ($billingLeft-1)));
-
-
-        $requestParams['recurring']['amount'] = $recurringAmount;
-        $requestParams['recurring']['billingCycle'] = $this->settings['billing_cycle'];
-
         $numberDaysCycle = $this->getDaysForCycles($this->settings['billing_cycle']);
 
-        //$today    = current_time( 'd/m/Y' );
-        $requestParams['recurring']['startDate'] = current_datetime()->modify( '+' .$numberDaysCycle. ' day' )->format( 'd/m/Y' );; // dd/mm/yyyy
-	    $requestParams['recurring']['billingDay'] = current_datetime()->modify( '+' .$numberDaysCycle. ' day' )->format( 'd' );
+        $requestParams['payment']['recurring']['installmentAmount'] = $recurringAmount;
+        $requestParams['payment']['recurring']['firstInstallmentAmount'] = round($totalAmount - ($recurringAmount * ($billingLeft-1)));
+
+        $requestParams['payment']['recurring']['totalInstallments'] = $billingLeft; // Nombre d’échéance
+
+        $requestParams['payment']['recurring']['frequency'] = $this->getFrequencyForRecurringPayments($this->settings['billing_cycle']);
+        $requestParams['payment']['recurring']['startDate'] = current_datetime()->modify( '+' .$numberDaysCycle. ' day' )->format( DateTime::ATOM);
+        $requestParams['payment']['recurring']['installmentDate'] = current_datetime()->modify( '+' .$numberDaysCycle. ' day' )->format( 'd' );
 
         do_action('payline_before_do_web_payment_nx', $requestParams, $this);
 

@@ -120,6 +120,7 @@ class PaylineSettings
             'woocommerce_payline_nx_settings' => self::getSettings('payline_nx'),
             'woocommerce_payline_cpt_settings' => self::getSettings('payline_cpt'),
             'woocommerce_wrong_sdk_call_settings' => self::getSettings('wrong_sdk_call'),
+            'woocommerce_payline_pos_list' => serialize(['10' => 'POS1']),
         ];
     }
 

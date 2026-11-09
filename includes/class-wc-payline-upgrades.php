@@ -12,7 +12,7 @@ class WC_Payline_Upgrades
         $newOptionName = 'woocommerce_payline_cpt_settings';
         $oldOptionValue = get_option($oldOptionName);
 
-        if(get_option($newOptionName) !== false){
+        if(empty($oldOptionValue) || get_option($newOptionName) !== false){
             return;
         }
 
@@ -37,6 +37,7 @@ class WC_Payline_Upgrades
             "user_error_message_cancelled",
             "user_error_message_error",
             "error_messages",
+            "debug",
         ];
 
         $cptSettings = get_option('woocommerce_payline_cpt_settings');
@@ -76,33 +77,14 @@ class WC_Payline_Upgrades
         //Save it the first time, to be able to call SDK in following getPointOfSales
         update_option( $oldOptionName, $newPaylineSettings, true );
 
-        $gateway = new WC_Gateway_Payline();
-        $posListForSelect = WC_Payline_SDK::getPointOfSales();
-        $mainContract = $oldOptionValue['main_contract'] ?? false;
-        if($posListForSelect && $mainContract) {
-            foreach ($posListForSelect as $pos) {
-                if (isset($pos['contracts']['contract'])
-                    && is_array($pos['contracts'])
-                    && is_array($pos['contracts']['contract'])
-                ){
-                    $contractsList = $pos['contracts']['contract'];
-                    $firstKey = key($contractsList);
-                    if(!is_numeric($firstKey) && isset($contractsList['contractNumber'])) {
-                        $contractsList = [$contractsList];
-                    }
+        if(class_exists('\Payline\Api\MonextCompatClient')) {
+            $foundPos = self::upgradePointOfSalesREST($oldOptionValue);
+        } else {
+            $foundPos = self::upgradePointOfSalesSOAP($oldOptionValue);
+        }
 
-                    foreach ($contractsList as $contract) {
-                        if ($contract['contractNumber'] == $mainContract) {
-                            $gateway->updatePointOfSalesList($pos['label']);
-                            update_option( 'woocommerce_payline_pos_list',  serialize($posListForSelect));
-                            $gateway->updateContractList($pos['contracts']);
-                            $newPaylineSettings['pos'] = $pos['label'];
-                            break 2;
-                        }
-                    }
-                }
-            }
-
+        if ($foundPos !== null) {
+            $newPaylineSettings['pos'] = $foundPos;
         }
 
         //Save it the second time, to save new pos value
@@ -111,5 +93,101 @@ class WC_Payline_Upgrades
         update_option( 'woocommerce_payline_nx_settings', $nxSettings, true );
         update_option( 'woocommerce_payline_rec_settings', $recSettings, true );
 
+    }
+
+    /**
+     * Migration PointOfSales avec l'API SOAP (legacy)
+     * @param array $oldOptionValue
+     * @return string|null
+     */
+    protected static function upgradePointOfSalesSOAP($oldOptionValue)
+    {
+        $gateway = new WC_Gateway_Payline();
+        $posListForSelect = WC_Payline_SDK::getPointOfSales();
+        $mainContract = $oldOptionValue['main_contract'] ?? false;
+
+        if (!$posListForSelect || !$mainContract) {
+            return null;
+        }
+
+        foreach ($posListForSelect as $pos) {
+            if (isset($pos['contracts']['contract'])
+                && is_array($pos['contracts'])
+                && is_array($pos['contracts']['contract'])
+            ){
+                $contractsList = $pos['contracts']['contract'];
+                $firstKey = key($contractsList);
+                if(!is_numeric($firstKey) && isset($contractsList['contractNumber'])) {
+                    $contractsList = [$contractsList];
+                }
+
+                foreach ($contractsList as $contract) {
+                    if ($contract['contractNumber'] == $mainContract) {
+                        $gateway->updatePointOfSalesList($pos['label']);
+                        update_option( 'woocommerce_payline_pos_list',  serialize($posListForSelect));
+                        $gateway->updateContractList($pos['contracts']);
+                        return $pos['label'];
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Migration PointOfSales avec l'API REST
+     * @param array $oldOptionValue
+     * @return string|null
+     */
+    protected static function upgradePointOfSalesREST($oldOptionValue)
+    {
+        $gateway = new WC_Gateway_Payline();
+        $posList = WC_Payline_SDK::getPointOfSales();
+        $mainContract = $oldOptionValue['main_contract'] ?? false;
+
+        if (is_wp_error($posList) || empty($posList['pointsOfSale']) || !$mainContract) {
+            return null;
+        }
+
+        $posListForSelect = [];
+        foreach ($posList['pointsOfSale'] as $pos) {
+            $posListForSelect[$pos['reference']] = $pos['name'];
+
+            if ($pos['reference'] === ($oldOptionValue['pos'] ?? null)) {
+                continue;
+            }
+
+            $contractsList = WC_Payline_SDK::getPaymentMethods($pos['reference']);
+            if (is_wp_error($contractsList) || empty($contractsList['paymentMethods'])) {
+                continue;
+            }
+
+            foreach ($contractsList['paymentMethods'] as $contract) {
+                if ($contract['id'] == $mainContract) {
+                    $gateway->updatePointOfSalesList($pos['reference']);
+                    update_option( 'woocommerce_payline_pos_list',  serialize($posListForSelect));
+                    $gateway->newUpdateContractList($pos['reference']);
+                    return $pos['reference'];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static function upgrade_to_1_6_0()
+    {
+        if(!empty(get_option('woocommerce_payline_pos_list'))) {
+            $gateway = new WC_Gateway_Payline();
+            $gateway->updatePointOfSalesList();
+
+            $currentPosRef = array_search($gateway->settings['pos'], unserialize(get_option('woocommerce_payline_pos_list')));
+            if(!empty($currentPosRef)) {
+                $payline_options = get_option('woocommerce_payline_settings');
+                $payline_options['pos'] = $currentPosRef;
+                update_option('woocommerce_payline_settings', $payline_options, true );
+            }
+        }
     }
 }

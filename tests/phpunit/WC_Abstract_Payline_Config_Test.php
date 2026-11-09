@@ -122,6 +122,7 @@ class WC_Abstract_Payline_Config_Test extends PaylineTestCase
         MockOptions::$data['woocommerce_payline_settings']['pos'] = 'POS1';
         MockOptions::$data['woocommerce_payline_cpt_settings']['enabled'] = 'yes';
         MockOptions::$data['woocommerce_payline_cpt_settings']['primary_contracts'] = array('CB-123');
+        MockOptions::$data['woocommerce_payline_pos_list'] = serialize(array('POS1' => array('id' => 'POS1')));
         $this->gateway = new WC_Gateway_Payline_CPT();
 
         $result = $this->gateway->is_available();

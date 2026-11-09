@@ -3,16 +3,31 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-use Payline\PaylineSDK;
+use Payline\Api\MonextCompatClient;
+use Payline\Api\ApiInterface as PaylineSDK;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class WC_Payline_SDK
 {
-    protected static $merchantSettings = null;
+//    protected static $merchantSettings = null;
+    /**
+     * @var MonextCompatClient
+     */
+    protected $monextCompatClient;
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    public function __construct(MonextCompatClient $monextCompatClient)
+    {
+        $this->monextCompatClient = $monextCompatClient;
+    }
 
     /**
      * Get Payline instance
-     * @return PaylineSDK|bool
+     * @return PaylineSDK|MonextCompatClient|bool
      */
     public static function getSDK($paymentId = null)
     {
@@ -22,7 +37,7 @@ class WC_Payline_SDK
 
         $pathLog = trailingslashit( dirname( WC_Log_Handler_File::get_log_file_path( 'payline' ) ) ) . trailingslashit( 'payline' );
         if (!is_dir($pathLog)) {
-            @mkdir($pathLog, 0777, true);
+            wp_mkdir_p($pathLog);
         }
         $usedBy = [];
         $usedBy[] = 'WP '.get_bloginfo('version');
@@ -37,103 +52,63 @@ class WC_Payline_SDK
             return null;
         }
 
-        $SDK = new PaylineSDK(
-            $settings['merchant_id'],
-            $settings['access_key'],
-            $settings['proxy_host'] ?? '',
-            $settings['proxy_port'] ?? '',
-            $settings['proxy_login'] ?? '',
-            $settings['proxy_password'] ?? '',
-            $settings['environment'],
-            $pathLog,
-            ($settings['environment'] == PaylineSDK::ENV_HOMO) ? Logger::DEBUG : Logger::INFO
-        );
-        $SDK->usedBy(implode(' - ',$usedBy));
+        $newSDK = new MonextCompatClient();
+        $newSDK::configure('https://api-sandbox.retail.monext.com', base64_encode($settings['merchant_id'].':'.$settings['access_key']));
+        $newSDK::usedBy(implode(' - ',$usedBy));
 
-        return $SDK;
+
+        return $newSDK;
+
     }
 
     /**
      * Get all point of sales (POS) related to the current account
-     * @return array
+     * @return array|WP_Error
      */
     public static function getPointOfSales()
     {
-        $posListForSelect = array();
-
-        if (self::checkCredentials()
-            && isset(self::$merchantSettings['listPointOfSell'])
-            && is_array(self::$merchantSettings['listPointOfSell'])
-            && isset(self::$merchantSettings['listPointOfSell']['pointOfSell'])
-            && is_array(self::$merchantSettings['listPointOfSell']['pointOfSell'])
-        )
-        {
-            $pointOfSell = self::$merchantSettings['listPointOfSell']['pointOfSell'];
-            //Case with only one POS
-            if(!empty($pointOfSell['label']) && isset($pointOfSell['contracts'])) {
-                self::$merchantSettings['listPointOfSell']['pointOfSell'] = array($pointOfSell);
-            }
-            return self::$merchantSettings['listPointOfSell']['pointOfSell'];
+        $settings = self::getMethodSettings();
+        $merchant_id = $settings['merchant_id'];
+        if(empty($merchant_id)) {
+            return [];
         }
 
-        return $posListForSelect;
-    }
+        $SDK = self::getSDK();
+        $result = $SDK->getPointsOfSale($merchant_id);
 
-    /**
-     * Get merchant settings
-     * @return array
-     */
-    public static function getMerchantSettings()
-    {
-        static $merchantSettings = null;
-
-        if ($merchantSettings === null && self::getSDK()) {
-            // Get merchant settings
-            $merchantSettings = self::getSDK()->getMerchantSettings(array());
-
-            $result = (is_array($merchantSettings) && !empty($merchantSettings['result']) && self::isValidResponse($merchantSettings));
-            if ($result) {
-                self::$merchantSettings = $merchantSettings;
-            }
-        }
-
-        return $merchantSettings;
-    }
-
-    /**
-     * Check if credentials are correct
-     * @return bool
-     */
-    public static function checkCredentials()
-    {
-        static $result = null;
-
-        if ($result === null) {
-            // Get merchant settings
-            $merchantSettings = self::getMerchantSettings();
-
-            $result = (is_array($merchantSettings) && !empty($merchantSettings['result']) && self::isValidResponse($merchantSettings));
-            if ($result) {
-                self::$merchantSettings = $merchantSettings;
-            }
+        if(!empty($result['error'])){
+            return new WP_Error( 'error', $result['detail'] );
         }
 
         return $result;
     }
 
-    /**
-     * Check if an API response is valid or not (check code 00000)
-     * @param array $result
-     * @param array $validFallbackCodeList
-     * @return bool
-     */
-    protected static function isValidResponse($result, $validFallbackCodeList = array())
+    public static function getPaymentMethods($posReference)
     {
-        $validClassic  = (is_array($result) && isset($result['result']['code']) && $result['result']['code'] == '00000');
-        $validFallback = (is_array($result) && isset($result['result']['code']) && in_array($result['result']['code'], $validFallbackCodeList));
+        $settings = self::getMethodSettings();
+        $SDK = self::getSDK();
+        $result = $SDK->getPaymentMethods($settings['merchant_id'], $posReference);
 
-        return ($validClassic || $validFallback);
+        if(!empty($result['error'])){
+            return new WP_Error( 'error', $result['detail'] );
+        }
+
+        return $result;
     }
+
+//    /**
+//     * Check if an API response is valid or not (check code 00000)
+//     * @param array $result
+//     * @param array $validFallbackCodeList
+//     * @return bool
+//     */
+//    protected static function isValidResponse($result, $validFallbackCodeList = array())
+//    {
+//        $validClassic  = (is_array($result) && isset($result['result']['code']) && $result['result']['code'] == '00000');
+//        $validFallback = (is_array($result) && isset($result['result']['code']) && in_array($result['result']['code'], $validFallbackCodeList));
+//
+//        return ($validClassic || $validFallback);
+//    }
 
     /**
      * Return plugin version
