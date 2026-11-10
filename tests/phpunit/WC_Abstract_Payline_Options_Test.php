@@ -1,6 +1,6 @@
 <?php
 
-use Payline\PaylineSDK;
+use Payline\Api\MonextCompatClient as PaylineSDK;
 
 /**
  * Tests unitaires optionnels Phase 3 pour WC_Abstract_Payline
@@ -230,7 +230,7 @@ class WC_Abstract_Payline_Options_Test extends PaylineTestCase
 
         $res = array(
             'result' => array(
-                'shortMessage' => 'ONHOLD_PARTNER',
+                'title' => 'ONHOLD_PARTNER',
             ),
         );
 
@@ -248,7 +248,7 @@ class WC_Abstract_Payline_Options_Test extends PaylineTestCase
 
         $res = array(
             'result' => array(
-                'shortMessage' => 'OTHER_STATUS',
+                'title' => 'OTHER_STATUS',
             ),
         );
 

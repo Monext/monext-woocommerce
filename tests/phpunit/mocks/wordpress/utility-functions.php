@@ -59,3 +59,23 @@ if (!function_exists('is_wp_error')) {
         return is_object($thing) && ($thing instanceof WP_Error);
     }
 }
+
+if (!function_exists('wp_mkdir_p')) {
+    function wp_mkdir_p($target) {
+        $target = trailingslashit($target);
+        if (is_dir($target)) {
+            return true;
+        }
+        wp_mkdir_p(dirname($target));
+        $old = umask(0);
+        $result = mkdir($target, 0777, true);
+        umask($old);
+        return $result;
+    }
+}
+
+if (!function_exists('trailingslashit')) {
+    function trailingslashit($string) {
+        return rtrim($string, '/\\') . '/';
+    }
+}

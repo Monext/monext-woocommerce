@@ -382,10 +382,21 @@ class WC_Abstract_Payline_Refund_Test extends PaylineTestCase
 
         $response = array(
             'result' => array(
-                'code' => '00000',
+                'title' => 'ACCEPTED',
                 'shortMessage' => 'ACCEPTED',
             ),
             'transaction' => array('id' => 'TXN_NO_CONTRACT'),
+            'transactions' => array(
+                array(
+                    'id' => 'TXN_SUCCESS',
+                    'paymentInstrumentData' => array(
+                        'maskedNumber' => '497010XXXXXXXX40',
+                        'paymentInstrumentType' => array('code' => 'CB'),
+                        'expirationDate' => '1225',
+                    ),
+                    'paymentMethodId' => 'CONTRACT123',
+                ),
+            ),
             'card' => array(
                 'number' => '497010XXXXXXXX40',
                 'type' => 'CB',

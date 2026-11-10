@@ -1,6 +1,6 @@
 <?php
 
-use Payline\PaylineSDK;
+use Payline\Api\MonextCompatClient as PaylineSDK;
 
 /**
  * Tests unitaires pour les hooks et triggers de WC_Abstract_Payline
@@ -125,10 +125,8 @@ class WC_Abstract_Payline_Hooks_Test extends PaylineTestCase
             ->method('getTransactionDetails')
             ->willReturn(array(
                 'result' => array('code' => '00000'),
-                'associatedTransactionsList' => array(
-                    'associatedTransactions' => array(
-                        array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
-                    ),
+                'associatedTransactions' => array(
+                    array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
                 ),
             ));
 

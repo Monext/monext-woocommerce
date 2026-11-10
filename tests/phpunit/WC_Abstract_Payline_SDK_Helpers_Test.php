@@ -1,7 +1,7 @@
 <?php
 
 use PHPUnit\Framework\MockObject\MockObject;
-use Payline\PaylineSDK;
+use Payline\Api\MonextCompatClient as PaylineSDK;
 
 /**
  * Tests unitaires pour helpers SDK de WC_Abstract_Payline

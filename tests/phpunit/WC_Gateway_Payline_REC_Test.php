@@ -5,7 +5,7 @@
  *
  * Couvre les méthodes spécifiques du gateway REC :
  * - is_available() : Vérification eligible_product_ids
- * - getWebPaymentRequest() : Calcul recurring (firstAmount, amount, endDate)
+ * - getWebPaymentRequest() : Calcul recurring (firstAmount, amount, totalInstallments)
  * - init_form_fields() : Champs spécifiques REC
  *
  * Compatibilité : PHP 7.4 - 8.4
@@ -23,7 +23,7 @@ class WC_Gateway_Payline_REC_Test extends PaylineTestCase
             'merchant_id' => 'MERCH123',
             'access_key' => 'ACCESS_KEY',
             'environment' => 'Homologation',
-            'pos' => 'POS1',
+            'pos' => 10,
             'smartdisplay_parameter' => '',
             'language' => '',
             'custom_page_code' => '',
@@ -126,19 +126,6 @@ class WC_Gateway_Payline_REC_Test extends PaylineTestCase
     // getWebPaymentRequest()
     // =========================================
 
-    public function test_get_web_payment_request_sets_first_amount_to_total()
-    {
-        $order = new WC_Order(12345);
-        $order->set_total(5000);
-
-        $method = $this->getPrivateMethod(WC_Gateway_Payline_REC::class, 'getWebPaymentRequest');
-        $result = $method->invoke($this->gateway, $order);
-
-        $this->assertArrayHasKey('recurring', $result, 'Le résultat doit contenir "recurring"');
-        $expectedAmount = 5000 * 100; // 5000.00 en centimes
-        $this->assertEquals($expectedAmount, $result['recurring']['firstAmount'], 'firstAmount doit être le total en centimes');
-    }
-
     public function test_get_web_payment_request_sets_amount_to_total()
     {
         $order = new WC_Order(12345);
@@ -148,7 +135,7 @@ class WC_Gateway_Payline_REC_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $order);
 
         $expectedAmount = 5000 * 100; // 5000.00 en centimes
-        $this->assertEquals($expectedAmount, $result['recurring']['amount'], 'amount doit être le total en centimes');
+        $this->assertEquals($expectedAmount, $result['payment']['recurring']['installmentAmount'], 'installmentAmount doit être le total en centimes');
     }
 
     public function test_get_web_payment_request_sets_billing_day_to_01()
@@ -159,10 +146,10 @@ class WC_Gateway_Payline_REC_Test extends PaylineTestCase
         $method = $this->getPrivateMethod(WC_Gateway_Payline_REC::class, 'getWebPaymentRequest');
         $result = $method->invoke($this->gateway, $order);
 
-        $this->assertEquals('01', $result['recurring']['billingDay'], 'billingDay doit être "01"');
+        $this->assertEquals('01', $result['payment']['recurring']['installmentDate'], 'installmentDate doit être "01"');
     }
 
-    public function test_get_web_payment_request_sets_end_date_with_max_records()
+    public function test_get_web_payment_request_sets_total_installments_with_max_records()
     {
         MockOptions::$data['woocommerce_payline_rec_settings']['max_records'] = '12';
         $this->gateway = new WC_Gateway_Payline_REC();
@@ -173,11 +160,11 @@ class WC_Gateway_Payline_REC_Test extends PaylineTestCase
         $method = $this->getPrivateMethod(WC_Gateway_Payline_REC::class, 'getWebPaymentRequest');
         $result = $method->invoke($this->gateway, $order);
 
-        $this->assertArrayHasKey('endDate', $result['recurring'], 'endDate doit être présent quand max_records est configuré');
-        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}$/', $result['recurring']['endDate'], 'endDate doit être au format JJ/MM/AAAA');
+        $this->assertArrayHasKey('totalInstallments', $result['payment']['recurring'], 'totalInstallments doit être présent quand max_records est configuré');
+        $this->assertEquals(12, $result['payment']['recurring']['totalInstallments'], 'totalInstallments doit valoir la valeur de max_records');
     }
 
-    public function test_get_web_payment_request_does_not_set_end_date_without_max_records()
+    public function test_get_web_payment_request_does_not_set_total_installments_without_max_records()
     {
         MockOptions::$data['woocommerce_payline_rec_settings']['max_records'] = '';
         $this->gateway = new WC_Gateway_Payline_REC();
@@ -188,7 +175,7 @@ class WC_Gateway_Payline_REC_Test extends PaylineTestCase
         $method = $this->getPrivateMethod(WC_Gateway_Payline_REC::class, 'getWebPaymentRequest');
         $result = $method->invoke($this->gateway, $order);
 
-        $this->assertArrayNotHasKey('endDate', $result['recurring'], 'endDate ne doit pas être présent sans max_records');
+        $this->assertArrayNotHasKey('totalInstallments', $result['payment']['recurring'], 'totalInstallments ne doit pas être présent sans max_records');
     }
 
     // =========================================

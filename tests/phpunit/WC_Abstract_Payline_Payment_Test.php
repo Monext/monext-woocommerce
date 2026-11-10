@@ -185,7 +185,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order);
 
         $this->assertArrayHasKey('date', $result['order'], 'La section order doit contenir une date');
-        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}/', $result['order']['date'], 'La date doit commencer par JJ/MM/AAAA');
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\+\-]\d{2}:\d{2}$/', $result['order']['date'], 'La date doit être au format DateTime::ATOM');
     }
 
     // =========================================
@@ -272,7 +272,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $order);
 
         $this->assertArrayHasKey('buyer', $result, 'La section buyer doit exister même avec des données minimales');
-        $this->assertArrayHasKey('billingAddress', $result, 'La section billingAddress doit exister même avec des données minimales');
+        $this->assertArrayHasKey('billingAddress', $result['buyer'], 'La section billingAddress doit exister même avec des données minimales');
     }
 
     // =========================================

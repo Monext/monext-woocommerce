@@ -23,7 +23,7 @@ class WC_Gateway_Payline_NX_Test extends PaylineTestCase
             'merchant_id' => 'MERCH123',
             'access_key' => 'ACCESS_KEY',
             'environment' => 'Homologation',
-            'pos' => 'POS1',
+            'pos' => '10',
             'smartdisplay_parameter' => '',
             'language' => '',
             'custom_page_code' => '',
@@ -67,6 +67,8 @@ class WC_Gateway_Payline_NX_Test extends PaylineTestCase
 
     public function test_is_available_returns_true_with_valid_billing_left()
     {
+        MockOptions::$data['woocommerce_payline_settings']['pos'] = 10;
+//        MockOptions::$data['woocommerce_payline_pos_list'] = serialize(['10' => 'POS1']);
         MockOptions::$data['woocommerce_payline_nx_settings']['billing_left'] = '3';
         $this->gateway = new WC_Gateway_Payline_NX();
 
@@ -104,8 +106,9 @@ class WC_Gateway_Payline_NX_Test extends PaylineTestCase
         $method = $this->getPrivateMethod(WC_Gateway_Payline_NX::class, 'getWebPaymentRequest');
         $result = $method->invoke($this->gateway, $order);
 
-        $this->assertArrayHasKey('recurring', $result, 'Le résultat doit contenir "recurring"');
-        $this->assertGreaterThanOrEqual(2, $result['recurring']['billingLeft'], 'billingLeft doit être au moins 2');
+        $this->assertArrayHasKey('recurring', $result['payment'], 'Le résultat doit contenir "recurring"');
+        $this->assertArrayHasKey('totalInstallments', $result['payment']['recurring'], 'recurring doit contenir "totalInstallments"');
+        $this->assertEquals(2, $result['payment']['recurring']['totalInstallments'], 'totalInstallments doit être au minimum 2');
     }
 
     public function test_get_web_payment_request_calculates_recurring_amount()
@@ -119,15 +122,16 @@ class WC_Gateway_Payline_NX_Test extends PaylineTestCase
         $method = $this->getPrivateMethod(WC_Gateway_Payline_NX::class, 'getWebPaymentRequest');
         $result = $method->invoke($this->gateway, $order);
 
-        $this->assertArrayHasKey('recurring', $result, 'Le résultat doit contenir "recurring"');
-        $this->assertArrayHasKey('amount', $result['recurring'], 'recurring doit contenir "amount"');
-        $this->assertArrayHasKey('firstAmount', $result['recurring'], 'recurring doit contenir "firstAmount"');
-        $this->assertArrayHasKey('billingCycle', $result['recurring'], 'recurring doit contenir "billingCycle"');
-        $this->assertArrayHasKey('startDate', $result['recurring'], 'recurring doit contenir "startDate"');
-        $this->assertArrayHasKey('billingDay', $result['recurring'], 'recurring doit contenir "billingDay"');
+        $this->assertArrayHasKey('recurring', $result['payment'], 'Le résultat doit contenir "recurring"');
+        $this->assertArrayHasKey('installmentAmount', $result['payment']['recurring'], 'recurring doit contenir "installmentAmount"');
+        $this->assertArrayHasKey('firstInstallmentAmount', $result['payment']['recurring'], 'recurring doit contenir "firstInstallmentAmount"');
+        $this->assertArrayHasKey('totalInstallments', $result['payment']['recurring'], 'recurring doit contenir "totalInstallments"');
+        $this->assertArrayHasKey('frequency', $result['payment']['recurring'], 'recurring doit contenir "frequency"');
+        $this->assertArrayHasKey('installmentDate', $result['payment']['recurring'], 'recurring doit contenir "installmentDate"');
+        $this->assertArrayHasKey('startDate', $result['payment']['recurring'], 'recurring doit contenir "startDate"');
     }
 
-    public function test_get_web_payment_request_sets_billing_cycle_from_settings()
+    public function test_get_web_payment_request_sets_frequency_from_billing_cycle()
     {
         MockOptions::$data['woocommerce_payline_nx_settings']['billing_cycle'] = '30';
         $this->gateway = new WC_Gateway_Payline_NX();
@@ -138,7 +142,74 @@ class WC_Gateway_Payline_NX_Test extends PaylineTestCase
         $method = $this->getPrivateMethod(WC_Gateway_Payline_NX::class, 'getWebPaymentRequest');
         $result = $method->invoke($this->gateway, $order);
 
-        $this->assertEquals('30', $result['recurring']['billingCycle'], 'billingCycle doit correspondre au setting');
+        $this->assertEquals('BIMONTHLY', $result['payment']['recurring']['frequency'], 'frequency doit correspondre à BIMONTHLY pour billing_cycle 30');
+    }
+
+    public function test_get_web_payment_request_sets_installment_date_from_billing_cycle()
+    {
+        MockOptions::$data['woocommerce_payline_nx_settings']['billing_cycle'] = '40';
+        $this->gateway = new WC_Gateway_Payline_NX();
+
+        $order = new WC_Order(12345);
+        $order->set_total(3000);
+
+        $method = $this->getPrivateMethod(WC_Gateway_Payline_NX::class, 'getWebPaymentRequest');
+        $result = $method->invoke($this->gateway, $order);
+
+        $this->assertArrayHasKey('installmentDate', $result['payment']['recurring'], 'installmentDate doit être présent');
+        $this->assertMatchesRegularExpression('/^\d{2}$/', $result['payment']['recurring']['installmentDate'], 'installmentDate doit être un jour au format 2 chiffres');
+    }
+
+    public function test_get_web_payment_request_sets_start_date_from_billing_cycle()
+    {
+        MockOptions::$data['woocommerce_payline_nx_settings']['billing_cycle'] = '40';
+        $this->gateway = new WC_Gateway_Payline_NX();
+
+        $order = new WC_Order(12345);
+        $order->set_total(3000);
+
+        $method = $this->getPrivateMethod(WC_Gateway_Payline_NX::class, 'getWebPaymentRequest');
+        $result = $method->invoke($this->gateway, $order);
+
+        $this->assertArrayHasKey('startDate', $result['payment']['recurring'], 'startDate doit être présent');
+    }
+
+    public function test_get_web_payment_request_calculates_recurring_amount_with_billing_left()
+    {
+        MockOptions::$data['woocommerce_payline_nx_settings']['billing_left'] = '4';
+        $this->gateway = new WC_Gateway_Payline_NX();
+
+        $order = new WC_Order(12345);
+        $order->set_total(40); // 40.00 EUR
+
+        $method = $this->getPrivateMethod(WC_Gateway_Payline_NX::class, 'getWebPaymentRequest');
+        $result = $method->invoke($this->gateway, $order);
+
+        // totalAmount = round(40 * 100) = 4000 cents
+        // recurringAmount = round((4000 / 100) / 4) * 100 = round(10) * 100 = 1000 cents
+        $this->assertEquals(1000, $result['payment']['recurring']['installmentAmount'], 'installmentAmount doit être 1000');
+        // firstInstallmentAmount = 4000 - (1000 * 3) = 1000
+        $this->assertEquals(1000, $result['payment']['recurring']['firstInstallmentAmount'], 'firstInstallmentAmount doit être 1000');
+        $this->assertEquals(4, $result['payment']['recurring']['totalInstallments'], 'totalInstallments doit être 4');
+    }
+
+    public function test_get_web_payment_request_handles_odd_billing_left()
+    {
+        MockOptions::$data['woocommerce_payline_nx_settings']['billing_left'] = '3';
+        $this->gateway = new WC_Gateway_Payline_NX();
+
+        $order = new WC_Order(12345);
+        $order->set_total(100); // 100.00 EUR
+
+        $method = $this->getPrivateMethod(WC_Gateway_Payline_NX::class, 'getWebPaymentRequest');
+        $result = $method->invoke($this->gateway, $order);
+
+        // totalAmount = round(100 * 100) = 10000 cents
+        // recurringAmount = round((10000 / 100) / 3) * 100 = round(33.33) * 100 = 3300 cents
+        $this->assertEquals(3300, $result['payment']['recurring']['installmentAmount'], 'installmentAmount doit être 3300');
+        // firstInstallmentAmount = 10000 - (3300 * 2) = 3400
+        $this->assertEquals(3400, $result['payment']['recurring']['firstInstallmentAmount'], 'firstInstallmentAmount doit être 3400');
+        $this->assertEquals(3, $result['payment']['recurring']['totalInstallments'], 'totalInstallments doit être 3');
     }
 
     // =========================================

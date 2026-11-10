@@ -34,3 +34,9 @@ if (!function_exists('wp_kses_post')) {
         return $data; // Pas de filtrage en test
     }
 }
+
+if (!function_exists('wp_kses')) {
+    function wp_kses($data, $allowed_html, $allowed_protocols = array()) {
+        return strip_tags($data, '<br>');
+    }
+}
