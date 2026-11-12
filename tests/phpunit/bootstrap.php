@@ -130,7 +130,12 @@ if (!isset($_SERVER['REMOTE_ADDR'])) {
 // SECTION 6 : CHARGEMENT DES CLASSES À TESTER
 // ========================================================================
 
-// Charge la classe de base pour les tests
+// Charge les classes SDK (nécessaire pour les constantes ENV_HOMO, HOMO_WDGT_JS, etc.)
+require_once __DIR__ . '/../../Api/ApiInterface.php';
+require_once __DIR__ . '/../../Api/MonextClient.php';
+require_once __DIR__ . '/../../Api/MonextCompatClient.php';
+
+// Charge les classes à tester (APRÈS les mocks pour éviter les erreurs)
 require_once __DIR__ . '/PaylineTestCase.php';
 
 // Charge les classes à tester (APRÈS les mocks pour éviter les erreurs)

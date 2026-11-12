@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Internal\Admin\Settings\PaymentProviders;
-use Payline\PaylineSDK;
+use Payline\Api\ApiInterface as PaylineSDK;
 use Monolog\Logger;
 
 class WC_Gateway_Payline extends WC_Abstract_Payline {
@@ -32,11 +32,12 @@ class WC_Gateway_Payline extends WC_Abstract_Payline {
         parent::__construct();
         $this->has_fields = false;
         $this->title = 'payline';
-        $this->description = __("Accept multiple online payments methods");
+        $this->description = __("Accept multiple online payments methods", 'payline');
         $this->icon = apply_filters('woocommerce_payline_icon', WCPAYLINE_PLUGIN_URL . 'assets/images/icone-monext.svg');
         $this->method_description = $this->description;
 
-        $this->supports = [];
+        //Refund support added to support old (<v1.5.5) orders refunds
+        $this->supports = ["refunds"];
         $this->availability = false;
         $this->init_form_fields();
         $this->init_settings();
@@ -99,7 +100,10 @@ class WC_Gateway_Payline extends WC_Abstract_Payline {
         $fields['access_key'] = array(
             'title' => __('Access key', 'payline'),
             'type' => 'obfuscated_field',
-            'desc' => sprintf(__( 'Password used to call %s web services (available in the %s administration center)', 'payline'), 'Monext', 'Monext')
+            /**
+             * translators: %1$s: service name, %2$s: administration center name
+             */
+            'desc' => sprintf(__( 'Password used to call %1$s web services (available in the %2$s administration center)', 'payline'), 'Monext', 'Monext')
         );
         $fields['environment'] = array(
             'title' => __('Target environment', 'payline'),
@@ -295,14 +299,18 @@ class WC_Gateway_Payline extends WC_Abstract_Payline {
     public function getPointOfSalesList()
     {
         $optionList = get_option( 'woocommerce_payline_pos_list', []);
-
-        if(empty($optionList)) {
+        if(empty($optionList) && !empty($this->settings['merchant_id'])) {
             $this->updatePointOfSalesList();
         }elseif (!empty($optionList)) {
             $optionList = unserialize($optionList);
         }
 
-        array_unshift($optionList,  __("Please chose a Point of Sale to get contracts"));
+        //TODO: A nettoyer
+        if(is_string($optionList)) {
+            $optionList = unserialize($optionList);
+        }
+
+        $optionList = [__("Please chose a Point of Sale to get contracts", 'payline')] + $optionList;
         return $optionList;
     }
 
@@ -315,19 +323,50 @@ class WC_Gateway_Payline extends WC_Abstract_Payline {
     public function updatePointOfSalesList($selectedPos = null)
     {
         $posListForSelect = array();
-        foreach (WC_Payline_SDK::getPointOfSales() as $pos) {
-            $posListForSelect[$pos['label']] = $pos['label'];
-            if ($selectedPos && $pos['label'] == $selectedPos
-                && isset($pos['contracts']['contract'])
-                && is_array($pos['contracts'])
-                && is_array($pos['contracts']['contract'])
-            ){
-                $this->updateContractList($pos['contracts']);
+        $posList = WC_Payline_SDK::getPointOfSales();
+
+        if (!is_wp_error($posList) && isset($posList['pointsOfSale'])) {
+
+            foreach ($posList['pointsOfSale'] as $pos) {
+                $posListForSelect[$pos['reference']] = $pos['name'];
+                if ($selectedPos && $pos['reference'] == $selectedPos) {
+                    $this->newUpdateContractList($pos['reference']);
+                }
             }
         }
         update_option( 'woocommerce_payline_pos_list',  serialize($posListForSelect));
     }
 
+
+    /**
+     * Update contract list in database
+     * @param $posReference
+     * @return void
+     */
+    public function newUpdateContractList($posReference)
+    {
+        $posContracts = array();
+        $contractsList = WC_Payline_SDK::getPaymentMethods($posReference);
+
+        $paymentMethods = [];
+        if (!is_wp_error($contractsList) && isset($contractsList['paymentMethods'])) {
+            // REST method getPaymentMethods is not stablilized
+            if (isset($contractsList['paymentMethods'])) {
+                $paymentMethods = $contractsList['paymentMethods'];
+            } elseif (!empty($contractsList[0]["paymentInstrumentType"])) {
+                $paymentMethods = $contractsList;
+            }
+
+            foreach ($paymentMethods as $contract) {
+                $posContracts[] = [
+                    "id" => $contract['paymentInstrumentType']['code'] . '-' . $contract['id'],
+                    "label" => $contract['name'],
+                    "contractNumber" => $contract['id']
+                ];
+            }
+            update_option( 'woocommerce_payline_pos_contracts_list',  serialize($posContracts));
+        }
+    }
 
     /**
      * Update contract list in database

@@ -1,6 +1,18 @@
 ## Changelog
 
-### 1.5.11
+### 1.6.0
+* Switch from SOAP calls to Monext Online API RESTful
+* Remove monext/monext-php dependency
+
+See [Monext Retail API Overview](https://api-docs.retail.monext.com/reference/getting-started-with-your-api)
+
+#### Environment (Development, QA validation)
+* WordPress version: 7.0.6
+* WooCommerce version: 10.8.1 , 11.1.2
+* php 8.4
+
+
+### 1.5.12
 * Prevent token renew on payment success
 * Invalidate token cache on payment modification
 * Add new phpunit test

@@ -22,7 +22,6 @@ abstract class PaylineTestCase extends TestCase
     protected function setUp(): void
     {
         $this->resetAllMocks();
-        $this->resetSdkStaticState();
     }
 
     /**
@@ -40,25 +39,6 @@ abstract class PaylineTestCase extends TestCase
         if (class_exists('MockGatewayPayline')) {
             MockGatewayPayline::reset();
         }
-    }
-
-    /**
-     * Reset la propriété statique $merchantSettings du SDK
-     *
-     * Nécessaire car elle persiste entre tests et peut causer
-     * des faux positifs si des tests précédents ont fait un
-     * appel API réussi.
-     */
-    private function resetSdkStaticState()
-    {
-        if (!class_exists('WC_Payline_SDK')) {
-            return;
-        }
-
-        $ref = new ReflectionClass(WC_Payline_SDK::class);
-        $prop = $ref->getProperty('merchantSettings');
-        $prop->setAccessible(true);
-        $prop->setValue(null, null);
     }
 
     /**

@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
-use Payline\PaylineSDK;
+use Payline\Api\ApiInterface as PaylineSDK;
 
 class PaylineWallet {
 
@@ -43,7 +43,7 @@ class PaylineWallet {
         if (self::isWalletEnabled()) {
             foreach ($menu_items as $slug => $item) {
                 if ($slug === 'customer-logout') {
-                    $retVal[self::$endPoint] = __('My Wallet');
+                    $retVal[self::$endPoint] = __('My Wallet', 'payline');
                 }
                 $retVal[$slug] = $item;
             }
@@ -100,7 +100,7 @@ class PaylineWallet {
     public static function getPageTitle($title, $endpoint)
     {
         if (self::is_wallet_endpoint_url() && $endpoint == self::$endPoint && in_the_loop()) {
-            $title = __('My Wallet', 'monext-online-woocommerce');
+            $title = __('My Wallet', 'payline');
         }
 
         return $title;

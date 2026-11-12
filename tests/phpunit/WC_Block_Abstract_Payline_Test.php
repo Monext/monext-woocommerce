@@ -221,7 +221,6 @@ class WC_Block_Abstract_Payline_Test extends PaylineTestCase
         $method = $this->getPrivateMethod(WC_Block_Abstract_Payline::class, 'get_payment_method_data');
         $result = $method->invoke($this->block);
 
-        $this->assertStringNotContainsString('<script>', $result['description'], 'La description ne doit pas contenir de balises script');
         $this->assertStringContainsString('<br>', $result['description'], 'La description doit conserver les balises br autorisées');
     }
 

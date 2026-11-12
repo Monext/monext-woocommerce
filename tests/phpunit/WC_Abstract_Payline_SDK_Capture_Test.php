@@ -1,7 +1,8 @@
 <?php
 
 use PHPUnit\Framework\MockObject\MockObject;
-use Payline\PaylineSDK;
+use Payline\Api\MonextCompatClient as PaylineSDK;
+use Payline\Api\ApiInterface;
 
 /**
  * Tests unitaires pour captureOrder() de WC_Abstract_Payline
@@ -83,14 +84,12 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             }))
             ->willReturn(array(
                 'result' => array('code' => '00000'),
-                'associatedTransactionsList' => array(
-                    'associatedTransactions' => array(
-                        array(
-                            'id' => 'TXN_AUTH_123',
-                            'type' => 'AUTHORIZATION',
-                            'amount' => 10000,
-                            'date' => '05/02/2026',
-                        ),
+                'associatedTransactions' => array(
+                    array(
+                        'id' => 'TXN_AUTH_123',
+                        'type' => 'AUTHORIZATION',
+                        'amount' => 10000,
+                        'date' => '05/02/2026',
                     ),
                 ),
             ));
@@ -102,7 +101,7 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             ->with($this->callback(function ($params) {
                 return $params['transactionID'] === 'TXN_AUTH_123'
                     && (int)$params['payment']['amount'] === 10000
-                    && $params['payment']['currency'] === '978'  // EUR
+                    && $params['payment']['currency'] === 'EUR'
                     && $params['payment']['action'] === 201;     // Capture
             }))
             ->willReturn(array(
@@ -139,20 +138,18 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             ->with($this->anything())
             ->willReturn(array(
                 'result' => array('code' => '00000'),
-                'associatedTransactionsList' => array(
-                    'associatedTransactions' => array(
-                        array(
-                            'id' => 'TXN_AUTH_123',
-                            'type' => 'AUTHORIZATION',
-                            'amount' => 10000,
-                            'date' => '05/02/2026',
-                        ),
-                        array(
-                            'id' => 'CAP_EXISTING_456',
-                            'type' => 'CAPTURE',
-                            'amount' => 10000,
-                            'date' => '05/02/2026',
-                        ),
+                'associatedTransactions' => array(
+                    array(
+                        'id' => 'TXN_AUTH_123',
+                        'type' => 'AUTHORIZATION',
+                        'amount' => 10000,
+                        'date' => '05/02/2026',
+                    ),
+                    array(
+                        'id' => 'CAP_EXISTING_456',
+                        'type' => 'CAPTURE',
+                        'amount' => 10000,
+                        'date' => '05/02/2026',
                     ),
                 ),
             ));
@@ -192,10 +189,8 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             ->with($this->anything())
             ->willReturn(array(
                 'result' => array('code' => '00000'),
-                'associatedTransactionsList' => array(
-                    'associatedTransactions' => array(
-                        array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
-                    ),
+                'associatedTransactions' => array(
+                    array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
                 ),
             ));
 
@@ -207,7 +202,7 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             ->willReturn(array(
                 'result' => array(
                     'code' => '02304',
-                    'longMessage' => 'Insufficient funds',
+                    'detail' => 'Insufficient funds',
                 ),
             ));
 
@@ -237,10 +232,8 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             ->method('getTransactionDetails')
             ->willReturn(array(
                 'result' => array('code' => '00000'),
-                'associatedTransactionsList' => array(
-                    'associatedTransactions' => array(
-                        array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
-                    ),
+                'associatedTransactions' => array(
+                    array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
                 ),
             ));
 
@@ -275,10 +268,8 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             ->method('getTransactionDetails')
             ->willReturn(array(
                 'result' => array('code' => '00000'),
-                'associatedTransactionsList' => array(
-                    'associatedTransactions' => array(
-                        array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
-                    ),
+                'associatedTransactions' => array(
+                    array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
                 ),
             ));
 
@@ -312,19 +303,17 @@ class WC_Abstract_Payline_SDK_Capture_Test extends PaylineTestCase
             ->method('getTransactionDetails')
             ->willReturn(array(
                 'result' => array('code' => '00000'),
-                'associatedTransactionsList' => array(
-                    'associatedTransactions' => array(
-                        array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
-                    ),
+                'associatedTransactions' => array(
+                    array('id' => 'TXN_AUTH_123', 'type' => 'AUTHORIZATION'),
                 ),
             ));
 
-        // Mock doCapture() : Vérifier devise EUR = 978
+        // Mock doCapture() : Vérifier devise EUR
         $this->mockSDK
             ->expects($this->once())
             ->method('doCapture')
             ->with($this->callback(function ($params) {
-                return $params['payment']['currency'] === '978';  // EUR
+                return $params['payment']['currency'] === 'EUR';
             }))
             ->willReturn(array(
                 'result' => array('code' => '00000'),

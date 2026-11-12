@@ -52,17 +52,21 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
      */
     protected function paylineSuccessWebPaymentDetails(WC_Order $order, array $res) {
 
-        if($res['result']['code'] == '00000') {
+//        if($res['result']['code'] == '00000') {
+        if($res['result']['title'] == 'ACCEPTED') {
             $orderId = $order->get_id();
 
-            // Store transaction details
-            $order->update_meta_data( 'Transaction ID', $res['transaction']['id']);
-            $order->update_meta_data( 'Card number', $res['card']['number']);
-            $order->update_meta_data( 'Payment mean', $res['card']['type']);
-            $order->update_meta_data( 'Card expiry', $res['card']['expirationDate']);
-            $order->update_meta_data( '_contract_number', $res['payment']['contractNumber']);
-            $order->save();
-            $order->payment_complete($res['transaction']['id']);
+            foreach ($res['transactions'] as $transaction){
+                // Store transaction details
+                $order->update_meta_data( 'Transaction ID', $transaction['id']); //transactions/0/id | 14096200405574
+                $order->update_meta_data( 'Card number', $transaction['paymentInstrumentData']['maskedNumber']); //transactions/0/paymentInstrumentData/maskedNumber | 497010XXXXXXXX07
+                $order->update_meta_data( 'Payment mean', $transaction['paymentInstrumentData']['paymentInstrumentType']['code']); //transactions/0/paymentInstrumentData/paymentInstrumentType/code | CB
+                $order->update_meta_data( 'Card expiry', $transaction['paymentInstrumentData']['expirationDate']); //transactions/0/paymentInstrumentData/expirationDate
+                $order->update_meta_data( '_contract_number', $transaction['paymentMethodId']); //transactions/0/paymentMethodId | 1234564
+
+                $order->save();
+                $order->payment_complete($res['transaction']['id']);
+            }
             return true;
         }
         return false;
@@ -83,7 +87,9 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
         $this->form_fields['enabled'] = array(
             'title' => __('Status', 'payline'),
             'type' => 'checkbox',
-            'label' => sprintf(__('Enable %s', 'payline'), $this->defaultName),
+            'label' => sprintf(
+                /* translators: %s: payment gateway name */
+                __('Enable %s', 'payline'), $this->defaultName),
             'default' => 'no'
         );
 
@@ -98,7 +104,9 @@ class WC_Gateway_Payline_CPT extends WC_Abstract_Payline {
             'title' => __( 'Description', 'payline' ),
             'type' => 'textarea',
             'description' => __( 'This controls the description which the user sees during checkout.', 'payline' ),
-            'default' => sprintf(__('You will be redirected on %s secured pages at the end of your order.', 'payline'), 'Payline')
+            'default' => sprintf(
+                /* translators: %s: payment service name */
+                __('You will be redirected on %s secured pages at the end of your order.', 'payline'), 'Payline')
         );
         $this->form_fields['wallet'] = array(
             'title' => __('Wallet', 'payline'),

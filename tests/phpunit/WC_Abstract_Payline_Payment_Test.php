@@ -7,11 +7,10 @@
  * au SDK Payline pour initier un paiement web. Cette méthode complexe effectue
  * 50+ appels WC_Order et génère une structure de données critique pour les
  * paiements. Les tests couvrent tous les scénarios : montants en centimes,
- * devises (code numérique), adresses (billing/shipping avec fallback), contrats,
- * URLs de callback, et configuration (langue, page personnalisée).
+ * devises, adresses, contrats, URLs de callback, et configuration (langue, page personnalisée).
  *
  * Méthodes testées :
- * - getWebPaymentRequest() : Construction requête paiement complète (29 tests)
+ * - getWebPaymentRequest() : Construction requête paiement complète (20 tests)
  */
 class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 {
@@ -32,6 +31,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
         MockOptions::$data['woocommerce_payline_settings']['language'] = 'fr';
         MockOptions::$data['woocommerce_payline_settings']['custom_page_code'] = 'CUSTOM_PAGE';
         MockOptions::$data['woocommerce_payline_settings']['smartdisplay_parameter'] = null;
+        MockOptions::$data['woocommerce_payline_settings']['pos'] = 'POS123';
 
         MockOptions::$data['woocommerce_payline_cpt_settings']['payment_action'] = '101';
         MockOptions::$data['woocommerce_payline_cpt_settings']['primary_contracts'] = array('CB-123', 'VISA-456');
@@ -39,6 +39,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
         MockOptions::$data['woocommerce_payline_cpt_settings']['language'] = 'fr';
         MockOptions::$data['woocommerce_payline_cpt_settings']['custom_page_code'] = 'CUSTOM_PAGE';
         MockOptions::$data['woocommerce_payline_cpt_settings']['smartdisplay_parameter'] = null;
+        MockOptions::$data['woocommerce_payline_cpt_settings']['pos'] = 'POS123';
 
         $this->gateway = new WC_Gateway_Payline_CPT();
 
@@ -78,30 +79,17 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
     /**
      * @throws ReflectionException
      */
-    public function test_get_web_payment_request_returns_array()
-    {
-        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
-
-        $result = $method->invoke($this->gateway, $this->order);
-
-        $this->assertIsArray($result, 'getWebPaymentRequest doit retourner un array');
-    }
-
-    /**
-     * @throws ReflectionException
-     */
     public function test_get_web_payment_request_has_required_sections()
     {
         $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        // Vérifier les sections principales
-        $this->assertArrayHasKey('payment', $result, 'Doit contenir section payment');
-        $this->assertArrayHasKey('order', $result, 'Doit contenir section order');
-        $this->assertArrayHasKey('buyer', $result, 'Doit contenir section buyer');
-        $this->assertArrayHasKey('billingAddress', $result, 'Doit contenir section billingAddress');
-        $this->assertArrayHasKey('shippingAddress', $result, 'Doit contenir section shippingAddress');
+        $this->assertArrayHasKey('payment', $result);
+        $this->assertArrayHasKey('order', $result);
+        $this->assertArrayHasKey('buyer', $result);
+        $this->assertArrayHasKey('billingAddress', $result['buyer']);
+        $this->assertArrayHasKey('delivery', $result);
     }
 
     // =========================================
@@ -124,15 +112,14 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
     /**
      * @throws ReflectionException
      */
-    public function test_get_web_payment_request_payment_section_has_currency_code()
+    public function test_get_web_payment_request_order_has_currency_code()
     {
         $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        // Devise doit être le code numérique (EUR = 978)
-        $this->assertArrayHasKey('currency', $result['payment']);
-        $this->assertIsNumeric($result['payment']['currency']);
+        $this->assertArrayHasKey('currency', $result['order']);
+        $this->assertEquals('EUR', $result['order']['currency']);
     }
 
     /**
@@ -144,20 +131,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('101', $result['payment']['action']);
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    public function test_get_web_payment_request_payment_section_has_contract_number()
-    {
-        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
-
-        $result = $method->invoke($this->gateway, $this->order);
-
-        // contractNumber doit être le premier contrat de primary_contracts
-        $this->assertEquals('CB-123', $result['payment']['contractNumber']);
+        $this->assertEquals('AUTOMATIC', $result['payment']['capture']);
     }
 
     // =========================================
@@ -173,7 +147,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('12345', $result['order']['ref']);
+        $this->assertEquals('12345', $result['order']['reference']);
     }
 
     /**
@@ -211,7 +185,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $this->order);
 
         $this->assertArrayHasKey('date', $result['order'], 'La section order doit contenir une date');
-        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}/', $result['order']['date'], 'La date doit commencer par JJ/MM/AAAA');
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[\+\-]\d{2}:\d{2}$/', $result['order']['date'], 'La date doit être au format DateTime::ATOM');
     }
 
     // =========================================
@@ -252,7 +226,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertEquals('42', $result['buyer']['customerId']);
+        $this->assertEquals('42', $result['buyer']['id']);
     }
 
     /**
@@ -264,21 +238,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        // Téléphone doit être nettoyé (chiffres seulement)
-        $this->assertEquals('0123456789', $result['buyer']['mobilePhone']);
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    public function test_get_web_payment_request_buyer_section_no_wallet_when_disabled()
-    {
-        // Wallet désactivé dans setUp
-        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
-
-        $result = $method->invoke($this->gateway, $this->order);
-
-        $this->assertArrayNotHasKey('walletId', $result['buyer'], 'walletId ne doit pas être présent si wallet désactivé');
+        $this->assertEquals('0123456789', $result['buyer']['mobile']);
     }
 
     /**
@@ -312,7 +272,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
         $result = $method->invoke($this->gateway, $order);
 
         $this->assertArrayHasKey('buyer', $result, 'La section buyer doit exister même avec des données minimales');
-        $this->assertArrayHasKey('billingAddress', $result, 'La section billingAddress doit exister même avec des données minimales');
+        $this->assertArrayHasKey('billingAddress', $result['buyer'], 'La section billingAddress doit exister même avec des données minimales');
     }
 
     // =========================================
@@ -328,30 +288,17 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $billing = $result['billingAddress'];
+        $billing = $result['buyer']['billingAddress'];
 
-        $this->assertStringContainsString('Jean', $billing['name']);
-        $this->assertStringContainsString('Dupont', $billing['name']);
+        $this->assertStringContainsString('Jean', $billing['label']);
+        $this->assertStringContainsString('Dupont', $billing['label']);
         $this->assertEquals('Jean', $billing['firstName']);
         $this->assertEquals('Dupont', $billing['lastName']);
-        $this->assertEquals('123 Rue de la Paix', $billing['street1']);
-        $this->assertEquals('Appartement 4B', $billing['street2']);
-        $this->assertEquals('Paris', $billing['cityName']);
-        $this->assertEquals('75001', $billing['zipCode']);
+        $this->assertEquals('123 Rue de la Paix', $billing['street']);
+        $this->assertEquals('Appartement 4B', $billing['complement']);
+        $this->assertEquals('Paris', $billing['city']);
+        $this->assertEquals('75001', $billing['zip']);
         $this->assertEquals('FR', $billing['country']);
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    public function test_get_web_payment_request_billing_address_includes_company_in_name()
-    {
-        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
-
-        $result = $method->invoke($this->gateway, $this->order);
-
-        // Company doit être ajouté au name entre parenthèses
-        $this->assertStringContainsString('(Acme Corp)', $result['billingAddress']['name']);
     }
 
     /**
@@ -363,9 +310,7 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        // Téléphone nettoyé (chiffres seulement)
-        $this->assertEquals('0123456789', $result['billingAddress']['phone']);
-        $this->assertEquals(1, $result['billingAddress']['phoneType']);
+        $this->assertEquals('0123456789', $result['buyer']['billingAddress']['mobile']);
     }
 
     // =========================================
@@ -381,56 +326,13 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $shipping = $result['shippingAddress'];
+        $shipping = $result['delivery']['address'];
 
-        // Données de livraison (pas billing)
         $this->assertEquals('Marie', $shipping['firstName']);
         $this->assertEquals('Martin', $shipping['lastName']);
-        $this->assertEquals('456 Avenue des Champs', $shipping['street1']);
-        $this->assertEquals('Lyon', $shipping['cityName']);
-        $this->assertEquals('69001', $shipping['zipCode']);
-        $this->assertEquals('FR', $shipping['country']);
-    }
-
-    /**
-     * @throws ReflectionException
-     */
-    public function test_get_web_payment_request_shipping_address_falls_back_to_billing()
-    {
-        // Order sans adresse de livraison (valeurs vides)
-        $order = new WC_Order(99999);
-        $order->set_total('50.00');
-        $order->set_currency('EUR');
-        $order->set_billing(array(
-            'first_name' => 'Pierre',
-            'last_name' => 'Durand',
-            'address_1' => '789 Boulevard',
-            'city' => 'Marseille',
-            'postcode' => '13001',
-            'country' => 'FR',
-        ));
-        // Explicitement vider l'adresse de livraison
-        $order->set_shipping(array(
-            'first_name' => '',
-            'last_name' => '',
-            'address_1' => '',
-            'city' => '',
-            'postcode' => '',
-            'country' => '',
-        ));
-
-        $method = $this->getPrivateMethod(WC_Abstract_Payline::class, 'getWebPaymentRequest');
-
-        $result = $method->invoke($this->gateway, $order);
-
-        $shipping = $result['shippingAddress'];
-
-        // Doit utiliser billing comme fallback (opérateur ?:)
-        $this->assertEquals('Pierre', $shipping['firstName']);
-        $this->assertEquals('Durand', $shipping['lastName']);
-        $this->assertEquals('789 Boulevard', $shipping['street1']);
-        $this->assertEquals('Marseille', $shipping['cityName']);
-        $this->assertEquals('13001', $shipping['zipCode']);
+        $this->assertEquals('456 Avenue des Champs', $shipping['street']);
+        $this->assertEquals('Lyon', $shipping['city']);
+        $this->assertEquals('69001', $shipping['zip']);
         $this->assertEquals('FR', $shipping['country']);
     }
 
@@ -449,11 +351,9 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $this->assertArrayHasKey('notificationURL', $result);
         $this->assertArrayHasKey('returnURL', $result);
-        $this->assertArrayHasKey('cancelURL', $result);
 
         $this->assertNotEmpty($result['notificationURL']);
         $this->assertNotEmpty($result['returnURL']);
-        $this->assertNotEmpty($result['cancelURL']);
     }
 
     // =========================================
@@ -469,12 +369,10 @@ class WC_Abstract_Payline_Payment_Test extends PaylineTestCase
 
         $result = $method->invoke($this->gateway, $this->order);
 
-        $this->assertArrayHasKey('contracts', $result);
-        $this->assertArrayHasKey('secondContracts', $result);
-
-        $this->assertIsArray($result['contracts']);
-        $this->assertContains('CB-123', $result['contracts']);
-        $this->assertContains('VISA-456', $result['contracts']);
+        $this->assertArrayHasKey('paymentMethod', $result);
+        $this->assertIsArray($result['paymentMethod']['paymentMethodIDs']);
+        $this->assertContains('CB-123', $result['paymentMethod']['paymentMethodIDs']);
+        $this->assertContains('VISA-456', $result['paymentMethod']['paymentMethodIDs']);
     }
 
     // =========================================

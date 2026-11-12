@@ -111,12 +111,17 @@ hideReceivedContext = function() {
 };
 
 eventFinalstatehasbeenreached= function (e) {
-    if ( e.state === "PAYMENT_SUCCESS" ) {
+    if ( ["ONHOLD_PARTNER", "PAYMENT_SUCCESS"].includes(e.state)) {
         //--> Redirect to success page
         //--> Ticket is hidden by CSS
         //--> Wait for DOM update to simulate a click on the ticket confirmation button
+
+        const buttonElementId = e.state === "ONHOLD_PARTNER"
+            ? "pl-mgr-paymentOnholdPartner-return_store_btn"
+            : "pl-ticket-default-ticket_btn";
+
         window.setTimeout(() => {
-            const ticketConfirmationButton = document.getElementById("pl-ticket-default-ticket_btn");
+            const ticketConfirmationButton = document.getElementById(buttonElementId);
             if ( ticketConfirmationButton ) {
                 ticketConfirmationButton.click();
             }
